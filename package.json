@@ -21,10 +21,8 @@
     "underscore.string": "2.3.1",
     "lingo": "0.0.5"
   },
-  "repositories": [
-    {
-      "type": "git",
-      "url": "https://neurs.beanstalkapp.com/amp-js"
-    }
-  ]
+  "repository": {
+    "type": "git",
+    "url": "https://neurs.beanstalkapp.com/amp-js"
+  }
 }
