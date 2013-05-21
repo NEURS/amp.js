@@ -1,8 +1,29 @@
-var dbDefaults,
-	amp	= require('../amp'),
-	db	= require('sequelize');
+var paths, config, dbDefaults,
+	path	= require('path'),
+	app		= path.dirname(require.main.filename),
+	db		= require('sequelize');
+
+paths = {
+	app_path: app,
+	cache: path.join(app, '/cache'),
+	config: path.join(app, '/config'),
+	controllers: path.join(app, '/controllers'),
+	libs: path.join(app, '/libs'),
+	locale: path.join(app, '/locale'),
+	models: path.join(app, '/models'),
+	views: path.join(app, '/views'),
+	webroot: path.join(app, '/webroot'),
+};
+
+config = require(path.join(paths.config, '/core'));
+config = amp.extend(config, {
+	database: require(path.join(paths.config, '/database'))
+});
 
 module.exports = {
+	db: null,
+	constants: paths,
+	config: config,
 	init: function (host, http, https) {
 		var config = {};
 
@@ -105,7 +126,32 @@ module.exports = {
 		};
 
 		return Class;
-	})()
+	})(),
+	route: require('./utils/route'),
+	string: require('underscore.string'),
+	errors: {
+		server: function (server, port) {
+			return function (e) {
+				if (e.code === 'EADDRINUSE') {
+					console.log('Address in use, retrying...'.red);
+
+					setTimeout(function () {
+						server.close();
+						server.listen(port);
+					}, 1000);
+				}
+			};
+		}
+	},
+	lang: {
+		lingo: require('lingo'),
+		singularize: function (str) {
+			return amp.lang.lingo.en.isSingular(str) ? str : amp.lang.lingo.en.singularize(str);
+		},
+		pluralize: function (str) {
+			return amp.lang.lingo.en.isPlural(str) ? str : amp.lang.lingo.en.pluralize(str);
+		}
+	}
 };
 
 dbDefaults = {
@@ -134,3 +180,8 @@ dbDefaults = {
 		maxIdleTime: 30
 	}
 };
+
+require(app + '/config/routes');
+
+amp.Controller		= require('./controllers/_controller.js');
+amp.AppController	= require(app + '/controllers/_app_controller.js');
