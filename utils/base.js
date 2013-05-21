@@ -1,4 +1,4 @@
-var paths, config, dbDefaults,
+var amp, paths, config, dbDefaults,
 	path	= require('path'),
 	app		= path.dirname(require.main.filename),
 	db		= require('sequelize');
@@ -15,12 +15,10 @@ paths = {
 	webroot: path.join(app, '/webroot'),
 };
 
-config = require(path.join(paths.config, '/core'));
-config = amp.extend(config, {
-	database: require(path.join(paths.config, '/database'))
-});
+config			= require(path.join(paths.config, '/core'));
+config.database	= require(path.join(paths.config, '/database'));
 
-module.exports = {
+amp = module.exports = {
 	db: null,
 	constants: paths,
 	config: config,
