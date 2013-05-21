@@ -1,4 +1,4 @@
-var amp = require('../amp');
+var amp = require('../utils/base');
 
 module.exports = {
 	headers: {},

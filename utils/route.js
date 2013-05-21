@@ -1,5 +1,5 @@
 var mimeTypes,
-	amp		= require('../amp'),
+	amp		= require('./base'),
 	fs		= require('fs'),
 	qs		= require('qs'),
 	util	= require('util'),

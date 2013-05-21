@@ -125,7 +125,6 @@ amp = module.exports = {
 
 		return Class;
 	})(),
-	route: require('./route'),
 	string: require('underscore.string'),
 	errors: {
 		server: function (server, port) {
@@ -151,6 +150,8 @@ amp = module.exports = {
 		}
 	}
 };
+
+amp.route = require('./route');
 
 dbDefaults = {
 	database: 'ampjs',
@@ -178,8 +179,3 @@ dbDefaults = {
 		maxIdleTime: 30
 	}
 };
-
-require(app + '/config/routes');
-
-amp.Controller		= require('./controllers/_controller.js');
-amp.AppController	= require(app + '/controllers/_app_controller.js');

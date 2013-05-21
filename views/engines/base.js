@@ -1,4 +1,4 @@
-var amp		= require('../../amp'),
+var amp		= require('../../utils/base'),
 	ect		= require('ect'),
 	engine	= ect({
 		root: amp.constants.app_path + '/views',
