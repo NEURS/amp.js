@@ -125,7 +125,7 @@ amp = module.exports = {
 
 		return Class;
 	})(),
-	route: require('./utils/route'),
+	route: require('./route'),
 	string: require('underscore.string'),
 	errors: {
 		server: function (server, port) {
