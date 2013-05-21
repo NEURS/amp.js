@@ -24,5 +24,9 @@
   "repository": {
     "type": "git",
     "url": "https://neurs.beanstalkapp.com/amp-js"
+  },
+  "main": "amp",
+  "engines": {
+    "node": ">=0.8.0"
   }
 }
