@@ -1,0 +1,30 @@
+{
+  "name": "AMP.js",
+  "description": "Node.JS MVC Framework",
+  "version": "0.2.0",
+  "keywords": [
+    "framework",
+    "amp",
+    "ampjs",
+    "amp.js"
+  ],
+  "maintainers": [
+    {
+      "name": "Kevin J. Martin",
+      "email": "kevin@neurs.net",
+      "web": "http://neurs.net"
+    }
+  ],
+  "dependencies": {
+    "colors": "0.6.0-1",
+    "sequelize": "git://github.com/sequelize/sequelize.git",
+    "underscore.string": "2.3.1",
+    "lingo": "0.0.5"
+  },
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://neurs.beanstalkapp.com/amp-js"
+    }
+  ]
+}
