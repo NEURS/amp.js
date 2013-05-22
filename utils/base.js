@@ -151,7 +151,9 @@ amp = module.exports = {
 	}
 };
 
-amp.route = require('./route');
+amp.route	= require('./route');
+amp.less	= new (require('./less'));
+amp.cache	= new (require('.cache'));
 
 dbDefaults = {
 	database: 'ampjs',

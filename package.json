@@ -21,7 +21,8 @@
     "underscore.string": "2.3.1",
     "lingo": "0.0.5",
     "qs": "0.6.5",
-    "ect": "0.5.2"
+    "ect": "0.5.2",
+    "mkdirp": "0.3.5"
   },
   "repository": {
     "type": "git",
