@@ -18,7 +18,7 @@ module.exports = amp.Class.extend({
 			if (fs.existsSync(amp.constants.views + file)) {
 				data[name] = new (require(amp.constants.views + file));
 			} else {
-				data[name] = new (require('.' + file));
+				data[name] = new (require('..' + file));
 			}
 
 			data[name]._init();
