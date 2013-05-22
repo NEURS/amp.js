@@ -12,7 +12,13 @@ module.exports = amp.Class.extend({
 		data.layout_view = view;
 
 		helpers.forEach(function (name) {
-			data[name] = new (require(amp.constants.app_path + '/views/helpers/' + amp.string.underscored(name)));
+			var file = '/helpers/' + amp.string.underscored(name);
+
+			if (fs.fileExistsSync(amp.constants.views + file)) {
+				data[name] = new (require(amp.constants.views + file));
+			} else {
+				data[name] = new (require('.' + file));
+			}
 
 			data[name]._init();
 		});
