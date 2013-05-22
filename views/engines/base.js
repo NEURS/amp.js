@@ -15,7 +15,7 @@ module.exports = amp.Class.extend({
 		helpers.forEach(function (name) {
 			var file = '/helpers/' + amp.string.underscored(name);
 
-			if (fs.fileExistsSync(amp.constants.views + file)) {
+			if (fs.existsSync(amp.constants.views + file)) {
 				data[name] = new (require(amp.constants.views + file));
 			} else {
 				data[name] = new (require('.' + file));

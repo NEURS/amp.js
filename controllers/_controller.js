@@ -51,7 +51,7 @@ module.exports = amp.Class.extend({
 			case 'component':
 				var name = '/components/' + amp.string.underscored(className);
 
-				if (fs.fileExistsSync(amp.constants.controllers + name)) {
+				if (fs.existsSync(amp.constants.controllers + name)) {
 					this[className] = require(amp.constants.controllers + name);
 				} else {
 					this[className] = require('.' + name);
