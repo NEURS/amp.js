@@ -51,7 +51,25 @@ module.exports = amp.Class.extend({
 			paths: [path.join(amp.constants.webroot, amp.config.less.srcPath)],
 			filename: outFile
 		}).parse(imports.join("\n"), function (err, tree) {
-		
+			if (err) {
+				throw err;
+			}
+
+			mkdirp(path.join(amp.constants.webroot, amp.config.less.outPath, path.dirname(outFile)), function (err) {
+				if (err) {
+					throw err;
+				}
+
+				var css = tree.toCSS({compress: amp.config.less.compress});
+
+				fs.writeFile(path.join(amp.constants.webroot, amp.config.less.outPath, outFile), css, {encoding: 'utf8'}, function (err) {
+					if (err) {
+						throw err;
+					}
+
+					amp.cache.set('cache.less.' + path.join(amp.config.less.outPath, outFile), true, amp.config.less.ttl);
+				});
+			});
 		});
 	},
 
