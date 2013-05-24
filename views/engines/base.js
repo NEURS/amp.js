@@ -9,6 +9,14 @@ var amp		= require('../../utils/base'),
 	});
 
 module.exports = amp.Class.extend({
+	request: null,
+	response: null,
+
+	init: function (request, response) {
+		this.request	= request;
+		this.response	= response;
+	},
+
 	render: function (layout, view, data, helpers) {
 		data.layout_view = view;
 
@@ -16,12 +24,10 @@ module.exports = amp.Class.extend({
 			var file = '/helpers/' + amp.string.underscored(name);
 
 			if (fs.existsSync(amp.constants.views + file)) {
-				data[name] = new (require(amp.constants.views + file));
+				data[name] = new (require(amp.constants.views + file))(this.request.data, data);
 			} else {
-				data[name] = new (require('..' + file));
+				data[name] = new (require('..' + file))(this.request.data, data);
 			}
-
-			data[name]._init();
 		});
 
 		return engine.render(layout, data);

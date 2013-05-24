@@ -12,7 +12,7 @@ module.exports = amp.Class.extend({
 		} else {
 			this.use = new (require('./cachers/' . cache.type))(cache);
 		}
-	}
+	},
 
 	set: function (key, value, ttl) {
 		return this.use.set(key, value, ttl);
@@ -35,5 +35,5 @@ nullCache = {
 	set: function () {},
 	get: function () {},
 	del: function () { return true; },
-	size: function () { return 0; },
+	size: function () { return 0; }
 };

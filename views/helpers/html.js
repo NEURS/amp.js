@@ -5,7 +5,7 @@ module.exports = amp.Class.extend({
 
 	minimizedAttributes: ['compact', 'checked', 'declare', 'readonly', 'disabled', 'selected', 'defer', 'ismap', 'nohref', 'noshade', 'nowrap', 'multiple', 'noresize', 'autoplay', 'controls', 'loop', 'muted', 'required', 'novalidate', 'formnovalidate'],
 
-	_init: function () {},
+	init: function () {},
 
 	createTag: function (tagName, content, attributes) {
 		if (typeof content === 'object') {
@@ -26,6 +26,10 @@ module.exports = amp.Class.extend({
 
 		for (i in attributes) {
 			if (typeof attributes[i] === 'boolean') {
+				if (attributes[i] === false) {
+					continue;
+				}
+
 				attributes[i] = i;
 			} else if (attributes[i] === null || attributes[i] === undefined) {
 				continue;

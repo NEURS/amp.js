@@ -1,35 +1,82 @@
 var amp		= require('./base'),
 	less	= require('less'),
 	fs		= require('fs'),
-	mkdirp	= require('mkdirp');
+	mkdirp	= require('mkdirp'),
+	path	= require('path');
 
 module.exports = amp.Class.extend({
 	watching: [],
 
 	init: function () {
-		this.parse(amp.constants.webroot + amp.config.less.srcPath);
-	}
+		var i;
 
-	parse: function (path, force) {
+		if (!!amp.config.less.packages) {
+			for (i in amp.config.less.packages) {
+				this.parsePackage(amp.config.less.packages[i], i);
+			}
+		}
+	},
+
+	parsePackage: function (inFile, outFile, force) {
+		var _this	= this,
+			imports	= [];
+
+		force = !!force;
+
+		if (!force && amp.cache.get('cache.less.' + path.join(amp.config.less.outPath, outFile))) {
+			return;
+		}
+
+		if (typeof inFile === 'string') {
+			inFile = [inFile];
+		}
+
+		inFile.forEach(function (file) {
+			var filename = path.join(amp.config.srcPath, file);
+
+			if (!_this.watching[filename]) {
+				_this.watching[filename] = true;
+
+				fs.watch(file, function (e) {
+					_this.watching[filename] = false;
+
+					_this.parsePackage(inFile, outFile, true);
+				});
+			}
+
+			imports.push('@import "' + file + '";');
+		});
+
+		new(less.Parser)({
+			paths: [path.join(amp.constants.webroot, amp.config.less.srcPath)],
+			filename: outFile
+		}).parse(imports.join("\n"), function (err, tree) {
+		
+		});
+	},
+
+	parseDir: function (dir, force) {
 		var _this = this;
 
 		force = !!force;
 
-		fs.readdir(path, function (err, files) {
+		fs.readdir(dir, function (err, files) {
 			if (err) {
 				throw err;
 			}
 
 			files.forEach(function (file) {
-				fs.stat(file, function (err, stat) {
+				var filename = path.join(dir, file);
+
+				fs.stat(filename, function (err, stat) {
 					if (err) {
 						throw err;
 					}
 
 					if (stat && stat.isDirectory()) {
-						_this.parse(file, force);
+						_this.parse(filename, force);
 					} else {
-						_this.parseFile(file, force);
+						_this.parseFile(filename, force);
 					}
 				});
 			});
@@ -37,7 +84,8 @@ module.exports = amp.Class.extend({
 	},
 
 	parseFile: function (file, force) {
-		var filename = file.substr(amp.constants.webroot.length);
+		var _this		= this,
+			filename	= file.substr(amp.constants.webroot.length);
 
 		force = !!force;
 
@@ -51,7 +99,7 @@ module.exports = amp.Class.extend({
 			}
 
 			new(less.Parser)({
-				paths: [amp.constants.webroot],
+				paths: [path.join(amp.constants.webroot, amp.config.less.srcPath)],
 				filename: filename
 			}).parse(data, function (err, tree) {
 				if (err) {
@@ -59,15 +107,15 @@ module.exports = amp.Class.extend({
 				}
 
 				var css		= tree.toCSS({compress: amp.config.less.compress}),
-					name	= filename.substr(amp.config.less.srcPath.length),
-					path2	= path.substr(amp.constants.webroot.length + amp.config.less.srcPath.length);
+					name	= path.dirname(filename).substr(amp.config.less.srcPath.length) + path.basename(filename, '.less') + '.css',
+					path2	= path.dirname(file).substr(amp.constants.webroot.length + amp.config.less.srcPath.length);
 
-				mkdirp(amp.config.less.outPath + path2, function (err) {
+				mkdirp(path.join(amp.constants.webroot, amp.config.less.outPath, path2), function (err) {
 					if (err) {
 						throw err;
 					}
 
-					fs.writeFile(amp.config.less.outPath + name, css, {encoding: 'utf8'}, function (err) {
+					fs.writeFile(path.join(amp.constants.webroot, amp.config.less.outPath, name), css, {encoding: 'utf8'}, function (err) {
 						if (err) {
 							throw err;
 						}
@@ -77,10 +125,10 @@ module.exports = amp.Class.extend({
 						if (amp.config.less.watch && !_this.watching[filename]) {
 							_this.watching[filename] = true;
 
-							fs.watch(file, function (e, filename) {
-								if (filename) {
-									_this.parseFile(filename, true);
-								}
+							fs.watch(file, function (e) {
+								_this.watching[filename] = false;
+
+								_this.parseFile(file, true);
 							});
 						}
 					});

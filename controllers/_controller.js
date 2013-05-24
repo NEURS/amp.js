@@ -6,7 +6,7 @@ var amp	= require('../utils/base'),
  * -Load Compoonents/Models upon init
  */
 module.exports = amp.Class.extend({
-	_viewEngine: new (require('../views/engines/' + amp.config.view)),
+	_viewEngine: null,
 
 	_components: [],
 	_models: [],
@@ -57,9 +57,7 @@ module.exports = amp.Class.extend({
 					this[className] = require('.' + name);
 				}
 
-				this[className] = new (this[className]);
-
-				this[className]._init(this);
+				this[className] = new (this[className])(this);
 			break;
 
 			case 'model':
@@ -110,6 +108,8 @@ module.exports = amp.Class.extend({
 		for (i in this._models) {
 			this._import('Model', this._models[i]);
 		}
+
+		this._viewEngine = new (require('../views/engines/' + amp.config.view))(this.request, this.response);
 
 		this._set({
 			controller: this._name,
