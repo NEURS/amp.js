@@ -32,12 +32,12 @@ module.exports = amp.Class.extend({
 		}
 
 		inFile.forEach(function (file) {
-			var filename = path.join(amp.config.srcPath, file);
+			var filename = path.join(amp.config.less.srcPath, file);
 
 			if (!_this.watching[filename]) {
 				_this.watching[filename] = true;
 
-				fs.watch(file, function (e) {
+				fs.watch(path.join(amp.constants.webroot, filename), function (e) {
 					_this.watching[filename] = false;
 
 					_this.parsePackage(inFile, outFile, true);
