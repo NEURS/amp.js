@@ -1,5 +1,6 @@
 var amp		= require('../../utils/base'),
-	html	= new (require('./html'));
+	html	= new (require('./html')),
+	dottie	= require('dottie');
 
 module.exports = amp.Class.extend({
 	_open: false,
@@ -10,8 +11,8 @@ module.exports = amp.Class.extend({
 		wrap: 'div'
 	},
 
-	init: function (post, data) {
-		this._post = post;
+	init: function (request, data) {
+		this._post = request.data;
 		this._data = data;
 	},
 
@@ -107,8 +108,8 @@ module.exports = amp.Class.extend({
 				opts.options = this._value(this._data, amp.string.camelize(field[field.length - 1].substr(field[field.length - 1].length - 3)));
 			}
 
-			if (Array.isArray(opts.options)) {
-				options.type = 'select';
+			if (typeof opts.options === 'object') {
+				opts.type = 'select';
 			}
 		}
 
@@ -195,30 +196,7 @@ module.exports = amp.Class.extend({
 		return ret;
 	},
 
-	_value: function (data, fieldName, open) {
-		var key,
-			ret		= true,
-			fields	= fieldName.split(/\./),
-			length	= fields.length - 1;
-
-		for (key in fields) {
-			if (typeof data === 'object') {
-				data = data[fields[key]];
-			} else if (key < length) {
-				ret = false;
-
-				break;
-			}
-		}
-
-		if (ret) {
-			if (data === undefined) {
-				ret = false;
-			} else if (typeof data === 'object' && !Array.isArray(data)) {
-				ret = false;
-			}
-		}
-
-		return ret ? data : (open ? null : this._value(this._open + '.' + fieldName, true));
+	_value: function (data, fieldName) {
+		return dottie.get(data, fieldName) || dottie.get(data, this._open + '.' + fieldName);
 	}
 });

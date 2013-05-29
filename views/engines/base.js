@@ -18,15 +18,17 @@ module.exports = amp.Class.extend({
 	},
 
 	render: function (layout, view, data, helpers) {
+		var _this = this;
+
 		data.layout_view = view;
 
 		helpers.forEach(function (name) {
 			var file = '/helpers/' + amp.string.underscored(name);
 
 			if (fs.existsSync(amp.constants.views + file)) {
-				data[name] = new (require(amp.constants.views + file))(this.request.data, data);
+				data[name] = new (require(amp.constants.views + file))(_this.request, data);
 			} else {
-				data[name] = new (require('..' + file))(this.request.data, data);
+				data[name] = new (require('..' + file))(_this.request.data, data);
 			}
 		});
 

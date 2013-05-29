@@ -13,7 +13,7 @@ module.exports = amp.Component.extend({
 		this._super.init(controller);
 
 		this.cookies = controller.Cookies || new (require('./cookies'))(controller);
-		this.session = store.get(this.id); // initialize session
+		this.session = controller.request.session = store.get(this.id); // initialize session
 	},
 
 	get id() {
@@ -38,7 +38,7 @@ module.exports = amp.Component.extend({
 	},
 
 	set: function (key, value) {
-		this.session = dottie.set(this.session, key, value);
+		this.session = this.controller.request.session = dottie.set(this.session, key, value);
 
 		store.set(this._id, this.session, 0);
 	},
