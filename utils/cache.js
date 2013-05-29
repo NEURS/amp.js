@@ -10,7 +10,7 @@ module.exports = amp.Class.extend({
 		if (!cache) {
 			this.use = nullCache;
 		} else {
-			this.use = new (require('./cachers/' . cache.type))(cache);
+			this.use = new (require('../lib/stores/' . cache.type))(cache);
 		}
 	},
 
