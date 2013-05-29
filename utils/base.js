@@ -58,7 +58,7 @@ amp = module.exports = {
 		}
 	},
 	extend: function () {
-		var i, j;
+		var i, j, g, s;
 
 		if (arguments.length < 2 || typeof arguments[0] !== 'object') {
 			return false;
@@ -71,7 +71,20 @@ amp = module.exports = {
 
 			for (j in arguments[i]) {
 				if (arguments[i].hasOwnProperty(j)) {
-					arguments[0][j] = arguments[i][j];
+					g = arguments[i].__lookupGetter__(j);
+					s = arguments[i].__lookupSetter__(j);
+
+					if (g || s) {
+						if (g) {
+							arguments[0].__defineGetter__(j, g);
+						}
+
+						if (s) {
+							arguments[0].__defineSetter__(j, s);
+						}
+					} else {
+						arguments[0][j] = arguments[i][j];
+					}
 				}
 			}
 		}

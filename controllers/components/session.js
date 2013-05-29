@@ -2,7 +2,7 @@ var amp		= require('../../utils/base'),
 	crypto	= require('crypto'),
 	dottie	= require('dottie'),
 	config	= amp.config.session,
-	store	= new (require('../../lib/stores/' . config.store))(config);
+	store	= new (require('../../lib/stores/' + config.store))(config);
 
 module.exports = amp.Component.extend({
 	_id: null,
@@ -35,7 +35,7 @@ module.exports = amp.Component.extend({
 
 	get: function (key) {
 		return dottie.get(this.session, key);
-	}
+	},
 
 	set: function (key, value) {
 		this.session = dottie.set(this.session, key, value);
