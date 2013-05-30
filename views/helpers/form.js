@@ -87,7 +87,7 @@ module.exports = amp.Class.extend({
 	},
 
 	input: function (fieldName, opts) {
-		var options, tag,
+		var options, tag, selectDataName,
 			before	= '',
 			after	= '',
 			field	= fieldName.split(/\./);
@@ -105,7 +105,11 @@ module.exports = amp.Class.extend({
 
 		if (opts.type !== 'select' && fieldName.substr(-3) === '_id') {
 			if (!opts.options) {
-				opts.options = this._value(this._data, amp.string.camelize(field[field.length - 1].substr(field[field.length - 1].length - 3)));
+				selectDataName = field[field.length - 1].substr(0, field[field.length - 1].length - 3);
+				selectDataName = amp.lang.pluralize(selectDataName);
+				selectDataName = amp.string.camelize(selectDataName);
+
+				opts.options = this._value(this._data, selectDataName);
 			}
 
 			if (typeof opts.options === 'object') {
@@ -120,7 +124,8 @@ module.exports = amp.Class.extend({
 			type: 'text',
 			value: opts.type === 'checkbox' ? 1 : this._value(this._post, fieldName),
 			wrap: opts.type === 'hidden' ? null : this.settings.wrap,
-			wrapClass: 'input ' + (opts.type || 'text')
+			wrapClass: 'input ' + (opts.type || 'text'),
+			placeholder: null
 		}, opts);
 
 		if (!options.value && options.default) {
@@ -145,7 +150,8 @@ module.exports = amp.Class.extend({
 				id: options.id,
 				name: options.name,
 				cols: options.cols,
-				rows: options.rows
+				rows: options.rows,
+				placeholder: options.placeholder
 			});
 		} else {
 			tag = html.openTag('input', {
@@ -153,7 +159,8 @@ module.exports = amp.Class.extend({
 				id: options.id,
 				name: options.name,
 				type: options.type,
-				value: options.value
+				value: options.value,
+				placeholder: options.placeholder
 			});
 		}
 
@@ -187,7 +194,7 @@ module.exports = amp.Class.extend({
 		for (i in opts.options) {
 			ret += html.createTag('option', opts.options[i], {
 				value: i,
-				selected: String(opts.value) === String(opts.options[i])
+				selected: String(opts.value) === String(i)
 			});
 		}
 
