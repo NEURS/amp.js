@@ -1,7 +1,8 @@
 var amp, paths, config, dbDefaults,
 	path	= require('path'),
 	app		= path.dirname(require.main.filename),
-	db		= require('sequelize');
+	db		= require('sequelize'),
+	emitter	= require('events').EventEmitter;
 
 paths = {
 	app_path: app,
@@ -182,7 +183,29 @@ dbDefaults = {
 		syncOnAssociation: false,
 		charset: 'utf8',
 		collate: 'utf8_general_ci',
-		//classMethods: {list: function (array fields, options) {}},
+		classMethods: {
+			list: function (valueField, nameField) {
+				var event = new emitter();
+
+				event.success	= function (func) { event.on('success', func); };
+				event.error		= function (func) { event.on('error', func); };
+
+				this.findAll({attributes: [valueField, nameField]}).success(function (list) {
+					var i,
+						ret = {};
+
+					for (i = 0; i < list.length; i++) {
+						ret[list[i][valueField]] = list[i][nameField];
+					}
+
+					event.emit('success', ret);
+				}).error(function (error) {
+					event.emit('error', error);
+				});
+
+				return event;
+			}
+		},
 		//instanceMethods: {},
 		timestamps: true
 	},
