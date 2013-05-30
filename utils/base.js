@@ -20,6 +20,7 @@ config.database	= require(path.join(paths.config, '/database'));
 
 amp = module.exports = {
 	db: null,
+	stores: {},
 	constants: paths,
 	config: config,
 	init: function (host, http, https) {

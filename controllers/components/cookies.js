@@ -12,7 +12,7 @@ module.exports = amp.Component.extend({
 	},
 
 	get: function () {
-		this.cookies.get.apply(this.cookies, arguments);
+		return this.cookies.get.apply(this.cookies, arguments);
 	},
 
 	set: function () {

@@ -1,4 +1,5 @@
-var amp = require('amp');
+var amp		= require('../../utils/base'),
+	store	= amp.stores[amp.config.session.store];
 
 module.exports = amp.Class.extend({
 	session: null,
@@ -9,6 +10,10 @@ module.exports = amp.Class.extend({
 
 	flash: function (type) {
 		var message;
+
+		if (!this.session || !this.session._flash) {
+			return undefined;
+		}
 
 		type	= type || 'general';
 		message	= this.session._flash[type];

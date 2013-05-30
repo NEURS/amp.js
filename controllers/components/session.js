@@ -2,7 +2,11 @@ var amp		= require('../../utils/base'),
 	crypto	= require('crypto'),
 	dottie	= require('dottie'),
 	config	= amp.config.session,
-	store	= new (require('../../lib/stores/' + config.store))(config);
+	store	= amp.stores[config.store] || new (require('../../lib/stores/' + config.store))(config);
+
+if (!amp.stores[config.store]) {
+	amp.stores[config.store] = store;
+}
 
 module.exports = amp.Component.extend({
 	_id: null,
@@ -13,7 +17,9 @@ module.exports = amp.Component.extend({
 		this._super.init(controller);
 
 		this.cookies = controller.Cookies || new (require('./cookies'))(controller);
-		this.session = controller.request.session = store.get(this.id); // initialize session
+		this.session = controller.request.session = store.get('session.' + this.id) || {}; // initialize session
+
+		this.cookies.set('SID', this.id, config.cookie);
 	},
 
 	get id() {
@@ -38,9 +44,11 @@ module.exports = amp.Component.extend({
 	},
 
 	set: function (key, value) {
-		this.session = this.controller.request.session = dottie.set(this.session, key, value);
+		dottie.set(this.session, key, value);
 
-		store.set(this._id, this.session, 0);
+		this.controller.request.session = this.session;
+
+		store.set('session.' + this.id, this.session, 0);
 	},
 
 	del: function (key) {
@@ -53,6 +61,6 @@ module.exports = amp.Component.extend({
 			type	= 'general';
 		}
 
-		this.set('_flash.' . type, message);
+		this.set('_flash.' + type, message);
 	}
 });
