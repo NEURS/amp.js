@@ -19,7 +19,7 @@ module.exports = amp.Component.extend({
 		this.cookies.set.apply(this.cookies, arguments);
 	},
 
-	clear: function (name) {
+	del: function (name) {
 		this.cookies.set(name, false);
 	}
 });

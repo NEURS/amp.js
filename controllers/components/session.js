@@ -22,6 +22,16 @@ module.exports = amp.Component.extend({
 		this.cookies.set('SID', this.id, config.cookie);
 	},
 
+	destroy: function () {
+		store.del('session.' + this.id);
+
+		this.session = this.controller.request.session = {};
+
+		this._id = this._create(); // generate new id
+
+		this.cookies.set('SID', this.id, config.cookie);
+	},
+
 	get id() {
 		if (!this._id) {
 			this._id = this.cookies.get('SID') || this._create();
