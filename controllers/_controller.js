@@ -133,12 +133,12 @@ module.exports = amp.Class.extend({
 		}
 
 		if (!code && url) {
-			code = 307;
+			code = 302;
 		}
 
 		if (code && !url) {
 			url		= code;
-			code	= 307;
+			code	= 302;
 		}
 
 		this.response.writeHead(code, {
