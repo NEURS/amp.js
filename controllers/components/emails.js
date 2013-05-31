@@ -6,8 +6,9 @@ var amp		= require('amp.js'),
 module.exports = amp.Component.extend({
 	options: null,
 	use: null,
-	queue: [],
-	sendingQueue: false,
+
+	_queue: [],
+	_sendingQueue: false,
 
 	init: function (controller) {
 		this._super.init(controller);
@@ -91,20 +92,20 @@ module.exports = amp.Component.extend({
 	},
 
 	queue: function (message, callback) {
-		this.queue.push([message, callback]);
+		this._queue.push([message, callback]);
 	},
 
 	queueSend: function (callback) {
 		var _this	= this,
-			entry	= this.queue.shift();
+			entry	= this._queue.shift();
 
-		if (this.sendingQueue === false) {
-			this.sendingQueue = [callback];
+		if (this._sendingQueue === false) {
+			this._sendingQueue = [callback];
 		} else {
 			console.log('WARNING: Called EmailsComponent#queueSend multiple times before queue finished. If emails are constantly being queued, callbacks may be unnecessarily delayed (or potentially never be called). Under controlled circumstances, this warning can be ignored.'.red);
 
-			this.queue.unshift(entry);
-			this.sendingQueue.push(callback);
+			this._queue.unshift(entry);
+			this._sendingQueue.push(callback);
 
 			return;
 		}
@@ -118,8 +119,8 @@ module.exports = amp.Component.extend({
 				_this.queueSend();
 			});
 		} else {
-			if (Array.isArray(this.sendingQueue)) {
-				this.sendingQueue.forEach(function (callback) {
+			if (Array.isArray(this._sendingQueue)) {
+				this._sendingQueue.forEach(function (callback) {
 					if (typeof callback === 'function') {
 						callback();
 					}

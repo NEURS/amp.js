@@ -142,10 +142,11 @@ module.exports = amp.Class.extend({
 		}
 
 		this.response.writeHead(code, {
-			Location: url
+			Location: url,
+			'Content-Length': Buffer.byteLength(String(code), 'utf8')
 		});
 
-		this.response.end();
+		this.response.end(this.request.method === 'HEAD' ? '' : String(code));
 
 		this._rendered = true;
 	},
