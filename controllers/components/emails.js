@@ -1,6 +1,7 @@
 var amp		= require('amp.js'),
 	fs		= require('fs'),
-	valid	= ['postmark'];
+	valid	= ['postmark'],
+	options	= amp.config.email;
 
 module.exports = amp.Component.extend({
 	options: null,
@@ -9,8 +10,6 @@ module.exports = amp.Component.extend({
 	sendingQueue: false,
 
 	init: function () {
-		this.options = amp.config.email;
-
 		if (valid.indexOf(options.type) > -1) {
 			this.controller._import('Component', 'Emailer/' + options.type);
 
@@ -26,7 +25,7 @@ module.exports = amp.Component.extend({
 			streams	= 0;
 
 		if (!message.from) {
-			message.from = this.options.from;
+			message.from = options.from;
 		}
 
 		if (Array.isArray(message.attachment) && message.attachment.length > 0)
