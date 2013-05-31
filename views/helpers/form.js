@@ -6,6 +6,7 @@ module.exports = amp.Class.extend({
 	_open: false,
 	_post: [],
 	_data: [],
+	_loops: {},
 
 	settings: {
 		wrap: 'div'
@@ -22,6 +23,7 @@ module.exports = amp.Class.extend({
 		}
 
 		this._open	= model;
+		this._loops	= {};
 		options		= options || {};
 
 		return html.openTag('form', {
@@ -50,23 +52,29 @@ module.exports = amp.Class.extend({
 	},
 
 	submit: function (caption, options) {
-		var before	= html.openTag(this.settings.wrap, {class: 'input submit'}),
-			after	= html.closeTag(this.settings.wrap);
+		var before	= '',
+			after	= '';
 
-		options = options || {};
+		if (!options && typeof caption === 'object') {
+			options = caption;
+			caption = options.label || options.value;
+		}
 
-		if ('div' in options) {
-			if (options.wrap) {
-				before	= this.openTag(options.wrap, {class: options.class || 'input submit'});
-				after	= this.closeTag(options.wrap);
-			} else {
-				before = after = '';
-			}
+		options = amp.extend({
+			wrap: this.settings.wrap,
+			wrapClass: 'input submit',
+			class: null
+		}, options || {});
+
+		if (options.wrap) {
+			before	= html.openTag(options.wrap, {class: options.wrapClass});
+			after	= html.closeTag(options.wrap);
 		}
 
 		return before + html.openTag('input', {
 			type: 'submit',
-			value: caption || 'Save'
+			value: caption || 'Save',
+			class: options.class
 		}) + after;
 	},
 
@@ -88,9 +96,12 @@ module.exports = amp.Class.extend({
 
 	input: function (fieldName, opts) {
 		var options, tag, selectDataName,
+			label	= '',
 			before	= '',
 			after	= '',
 			field	= fieldName.split(/\./);
+
+		opts = opts || {};
 
 		if (!fieldName) {
 			return html.comment('Missing Parameter');
@@ -101,7 +112,24 @@ module.exports = amp.Class.extend({
 			fieldName	= field.join('.');
 		}
 
-		opts = opts || {};
+		if (opts.loop === true || !isNaN(opts.loop)) {
+			if (fieldName in this._loops) {
+				this._loops[fieldName]++;
+			} else {
+				this._loops[fieldName] = typeof opts.loop === 'number' ? opts.loop : 0;
+			}
+
+			if (typeof opts.class != 'string') {
+				opts.class = ''
+			}
+
+			opts.class = (opts.class + ' ' + field.join('-').replace(/_/, '-').toLowerCase()).trim();
+
+			field.splice(1, 0, this._loops[fieldName]);
+
+			fieldName = field.join('.');
+			opts.loop = true;
+		}
 
 		if (opts.type !== 'select' && fieldName.substr(-3) === '_id') {
 			if (!opts.options) {
@@ -119,13 +147,14 @@ module.exports = amp.Class.extend({
 
 		options = amp.extend({
 			class: null,
-			id: opts.type === 'hidden' ? null : amp.string.camelize('_' + fieldName.replace(/\./g, '_')),
+			id: amp.string.camelize('_' + fieldName.replace(/\./g, '_')),
 			name: 'data[' + field.join('][') + ']',
 			type: 'text',
 			value: opts.type === 'checkbox' ? 1 : this._value(this._post, fieldName),
 			wrap: opts.type === 'hidden' ? null : this.settings.wrap,
 			wrapClass: 'input ' + (opts.type || 'text'),
-			placeholder: null
+			placeholder: null,
+			label: amp.string.humanize(opts.loop ? field[2] : field[1])
 		}, opts);
 
 		if (!options.value && options.default) {
@@ -164,10 +193,11 @@ module.exports = amp.Class.extend({
 			});
 		}
 
-		return before
-			+ (options.label !== false ? this.label(fieldName, options.label || amp.string.humanize(field[1]), {for: options.id}) : '')
-			+ tag
-			+ after;
+		if (options.label !== false) {
+			options.label = this.label(fieldName, options.label, {for: options.id});
+		}
+
+		return before + label + tag + after;
 	},
 
 	inputs: function (fields) {

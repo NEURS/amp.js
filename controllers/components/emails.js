@@ -5,9 +5,11 @@ var amp		= require('amp.js'),
 module.exports = amp.Component.extend({
 	options: null,
 	use: null,
+	queue: [],
+	sendingQueue: false,
 
-	configure: function (options) {
-		this.options = options;
+	init: function () {
+		this.options = amp.config.email;
 
 		if (valid.indexOf(options.type) > -1) {
 			this.controller._import('Component', 'Emailer/' + options.type);
@@ -22,6 +24,10 @@ module.exports = amp.Component.extend({
 		var i, stream,
 			_this	= this,
 			streams	= 0;
+
+		if (!message.from) {
+			message.from = this.options.from;
+		}
 
 		if (Array.isArray(message.attachment) && message.attachment.length > 0)
 		{
@@ -76,6 +82,48 @@ module.exports = amp.Component.extend({
 			}
 		}
 
-		this.use.send(message, callback);
+		if (this.use) {
+			this.use.send(message, callback);
+		} else {
+			throw new Error('No Emailer chosen. Please configure Emails in APP/config/core.js');
+		}
+	},
+
+	queue: function (message, callback) {
+		this.queue.push([message, callback]);
+	},
+
+	queueSend: function (callback) {
+		var _this	= this,
+			entry	= this.queue.shift();
+
+		if (this.sendingQueue === false) {
+			this.sendingQueue = [callback];
+		} else {
+			console.log('WARNING: Called EmailsComponent#queueSend multiple times before queue finished. If emails are constantly being queued, callbacks may be unnecessarily delayed (or potentially never be called). Under controlled circumstances, this warning can be ignored.'.red);
+
+			this.queue.unshift(entry);
+			this.sendingQueue.push(callback);
+
+			return;
+		}
+
+		if (entry) {
+			this.send(entry[0], function (err, success) {
+				if (typeof entry[1] === 'function') {
+					entry[1](err, success);
+				}
+
+				_this.queueSend();
+			});
+		} else {
+			if (Array.isArray(this.sendingQueue)) {
+				this.sendingQueue.forEach(function (callback) {
+					if (typeof callback === 'function') {
+						callback();
+					}
+				});
+			}
+		}
 	}
 });
