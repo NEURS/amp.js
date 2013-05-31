@@ -9,7 +9,9 @@ module.exports = amp.Component.extend({
 	queue: [],
 	sendingQueue: false,
 
-	init: function () {
+	init: function (controller) {
+		this._super.init(controller);
+
 		if (valid.indexOf(options.type) > -1) {
 			this.controller._import('Component', 'Emailer/' + options.type);
 

@@ -196,7 +196,10 @@ module.exports = {
 		parsedEvent.on('parseEnd', function () {
 			controller._init.call(controller);
 			controller._common.call(controller);
-			controller[route.action].apply(controller, route.params);
+
+			if (!controller._rendered) { // redirected or just plain rendered
+				controller[route.action].apply(controller, route.params);
+			}
 		});
 
 		if (req.method === 'POST') {

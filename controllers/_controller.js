@@ -7,6 +7,7 @@ var amp	= require('../utils/base'),
  */
 module.exports = amp.Class.extend({
 	_viewEngine: null,
+	_rendered: false,
 
 	_components: [],
 	_models: [],
@@ -145,11 +146,17 @@ module.exports = amp.Class.extend({
 		});
 
 		this.response.end();
+
+		this._rendered = true;
 	},
 
 	render: function (code, file) {
 		var content	= '',
 			views	= amp.constants.app_path + '/views';
+
+		if (this._rendered) {
+			return false;
+		}
 
 		if (typeof file !== 'string' || !file.length) {
 			if (typeof code === 'string') {
@@ -195,5 +202,7 @@ module.exports = amp.Class.extend({
 		}
 
 		this.response.end();
+
+		this._rendered = true;
 	}
 });
