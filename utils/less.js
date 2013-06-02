@@ -38,7 +38,7 @@ module.exports = amp.Class.extend({
 				_this.watching[filename] = true;
 
 				fs.watch(path.join(amp.constants.webroot, filename), function (e) {
-					_this.watching[filename] = false;
+					//_this.watching[filename] = false;
 
 					_this.parsePackage(inFile, outFile, true);
 				});
@@ -144,7 +144,7 @@ module.exports = amp.Class.extend({
 							_this.watching[filename] = true;
 
 							fs.watch(file, function (e) {
-								_this.watching[filename] = false;
+								//_this.watching[filename] = false;
 
 								_this.parseFile(file, true);
 							});

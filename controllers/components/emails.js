@@ -101,7 +101,7 @@ module.exports = amp.Component.extend({
 
 		if (this._sendingQueue === false) {
 			this._sendingQueue = [callback];
-		} else {
+		} else if (callback) {
 			console.log('WARNING: Called EmailsComponent#queueSend multiple times before queue finished. If emails are constantly being queued, callbacks may be unnecessarily delayed (or potentially never be called). Under controlled circumstances, this warning can be ignored.'.red);
 
 			this._queue.unshift(entry);

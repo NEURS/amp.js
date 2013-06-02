@@ -184,13 +184,13 @@ dbDefaults = {
 		charset: 'utf8',
 		collate: 'utf8_general_ci',
 		classMethods: {
-			list: function (valueField, nameField) {
+			list: function (valueField, nameField, where) {
 				var event = new emitter();
 
 				event.success	= function (func) { event.on('success', func); };
 				event.error		= function (func) { event.on('error', func); };
 
-				this.findAll({attributes: [valueField, nameField]}).success(function (list) {
+				this.findAll({attributes: [valueField, nameField], where: where}).success(function (list) {
 					var i,
 						ret = {};
 
