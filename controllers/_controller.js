@@ -153,7 +153,7 @@ module.exports = amp.Class.extend({
 
 	render: function (code, file) {
 		var content	= '',
-			views	= amp.constants.app_path + '/views';
+			views	= amp.constants.views;
 
 		if (this._rendered) {
 			return false;

@@ -184,18 +184,50 @@ dbDefaults = {
 		charset: 'utf8',
 		collate: 'utf8_general_ci',
 		classMethods: {
-			list: function (valueField, nameField, where) {
-				var event = new emitter();
+			list: function (fields, options) {
+				var nameFields	= fields,
+					valueField	= 'id',
+					event		= new emitter();
 
-				event.success	= function (func) { event.on('success', func); };
-				event.error		= function (func) { event.on('error', func); };
+				event.success	= function (func) { return this.on('success', func); };
+				event.error		= function (func) { return this.on('error', func); };
 
-				this.findAll({attributes: [valueField, nameField], where: where}).success(function (list) {
+				if (typeof fields === 'string') {
+					nameFields	= [fields];
+					fields		= [valueField, fields];
+				} else if (Array.isArray(fields)) {
+					if (fields.length === 1) {
+						fields.unshift(valueField);
+					} else if (fields.length > 1) {
+						valueField = fields[0];
+						nameFields = fields.slice(1);
+					} else {
+						nameFields	= [valueField];
+						fields		= [valueField, valueField];
+					}
+				} else {
+					nameFields	= [valueField];
+					fields		= [valueField, valueField];
+				}
+
+				if (!options) {
+					options = {};
+				}
+
+				options.attributes = fields;
+
+				this.findAll(options).success(function (list) {
 					var i,
 						ret = {};
 
 					for (i = 0; i < list.length; i++) {
-						ret[list[i][valueField]] = list[i][nameField];
+						ret[list[i][valueField]] = [];
+
+						nameFields.forEach(function (value) {
+							ret[list[i][valueField]].push(value);
+						});
+
+						ret[list[i][valueField]].join(' ');
 					}
 
 					event.emit('success', ret);
