@@ -222,6 +222,10 @@ module.exports = amp.Class.extend({
 		});
 
 		for (i in opts.options) {
+			if (Array.isArray(opts.options[i])) {
+				opts.options[i] = opts.options[i].join(' ');
+			}
+
 			ret += html.createTag('option', opts.options[i], {
 				value: i,
 				selected: String(opts.value) === String(i)

@@ -224,10 +224,8 @@ dbDefaults = {
 						ret[list[i][valueField]] = [];
 
 						nameFields.forEach(function (value) {
-							ret[list[i][valueField]].push(value);
+							ret[list[i][valueField]].push(list[i][value]);
 						});
-
-						ret[list[i][valueField]].join(' ');
 					}
 
 					event.emit('success', ret);

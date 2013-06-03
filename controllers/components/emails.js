@@ -48,7 +48,7 @@ module.exports = amp.Component.extend({
 
 		message = amp.extend({
 			from: options.from,
-			layout: 'default',
+			layout: 'email',
 			template: 'index',
 			helpers: []
 		}, message || {});
@@ -136,7 +136,7 @@ module.exports = amp.Component.extend({
 		}
 
 		if (entry) {
-			this._data = entry[1];
+			this._data = entry[2];
 
 			this.send(entry[0], function (err, success) {
 				if (typeof entry[1] === 'function') {
