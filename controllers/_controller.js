@@ -44,9 +44,9 @@ module.exports = amp.Class.extend({
 	_afterRender: function () {},
 
 	init: function () {
-		this._components	= [];
-		this._models		= [];
-		this._helpers		= [];
+		this._components	= this._components !== null ? this._components : [];
+		this._models		= this._models !== null ? this._models : [];
+		this._helpers		= this._helpers !== null ? this._helpers : [];
 		this._data			= {};
 	},
 

@@ -1,4 +1,4 @@
-var amp		= require('amp.js'),
+var amp		= require('../../utils/base'),
 	fs		= require('fs'),
 	Gettext	= require('node-gettext'),
 	gettext	= new Gettext();
@@ -54,7 +54,7 @@ module.exports = amp.Class.extend({
 	dnpgettext: function (domain, context, msgid, msgid_plural, n) {
 		var file;
 
-		domain = domain || 'default';
+		domain = this.locale + "__" + (domain || 'default');
 
 		if (!gettext._domains[domain]) {
 			file = amp.constants.locale + '/' + this.locale.toLowerCase().replace(/-/, '_') + '/LC_MESSAGES/' + domain + '.po';
