@@ -1,20 +1,27 @@
-var amp		= require('../../utils/base'),
+var validators, // at the bottom
+	amp		= require('../../utils/base'),
+	dottie	= require('dottie'),
 	html	= new (require('./html')),
-	dottie	= require('dottie');
+	Gettext	= new (require('./gettext'));
 
 module.exports = amp.Class.extend({
 	_open: false,
-	_post: [],
-	_data: [],
-	_loops: {},
+	_post: null,
+	_data: null,
+	_loops: null,
+
+	get validators() {
+		return validators;
+	},
 
 	settings: {
 		wrap: 'div'
 	},
 
 	init: function (request, data) {
-		this._post = request.data;
-		this._data = data;
+		this._post	= request.data;
+		this._data	= data;
+		this._loops	= {};
 	},
 
 	create: function (model, options) {
@@ -26,10 +33,17 @@ module.exports = amp.Class.extend({
 		this._loops	= {};
 		options		= options || {};
 
+		if (options.type === 'file') {
+			options.method	= 'post';
+			options.enctype	= 'multipart/form-data'
+		}
+
 		return html.openTag('form', {
 			id: options.id || model + 'Form',
 			action: options.action || '',
-			method: options.method || 'post'
+			method: options.method || 'post',
+			class: options.class || '',
+			enctype: options.enctype
 		});
 	},
 
@@ -73,7 +87,7 @@ module.exports = amp.Class.extend({
 
 		return before + html.openTag('input', {
 			type: 'submit',
-			value: caption || 'Save',
+			value: Gettext.gettext(caption || 'Save'),
 			class: options.class
 		}) + after;
 	},
@@ -88,14 +102,15 @@ module.exports = amp.Class.extend({
 
 		options = options || {};
 
-		return html.createTag('label', text, {
+		return html.createTag('label', Gettext.gettext(text), {
 			class: options.class,
 			for: options.for || amp.string.camelize('_' + fieldName.replace(/\./, '_')),
 		});
 	},
 
 	input: function (fieldName, opts) {
-		var options, tag, selectDataName,
+		var i, options, fieldDataName,
+			tag		= '',
 			label	= '',
 			before	= '',
 			after	= '',
@@ -131,16 +146,21 @@ module.exports = amp.Class.extend({
 			opts.loop = true;
 		}
 
-		if (opts.type !== 'select' && fieldName.substr(-3) === '_id') {
+		if ((!opts.type && fieldName.substr(-3) === '_id') || opts.type === 'radio') {
 			if (!opts.options) {
-				selectDataName = field[field.length - 1].substr(0, field[field.length - 1].length - 3);
-				selectDataName = amp.lang.pluralize(selectDataName);
-				selectDataName = amp.string.camelize(selectDataName);
+				fieldDataName = field[field.length - 1];
 
-				opts.options = this._value(this._data, selectDataName);
+				if (fieldName.substr(-3) === '_id') {
+					fieldDataName = fieldDataName.substr(0, field[field.length - 1].length - 3);
+				}
+
+				fieldDataName = amp.lang.pluralize(fieldDataName);
+				fieldDataName = amp.string.camelize(fieldDataName);
+
+				opts.options = this._value(this._data, fieldDataName);
 			}
 
-			if (typeof opts.options === 'object') {
+			if (!opts.type && typeof opts.options === 'object') {
 				opts.type = 'select';
 			}
 		}
@@ -148,13 +168,13 @@ module.exports = amp.Class.extend({
 		options = amp.extend({
 			class: null,
 			id: amp.string.camelize('_' + fieldName.replace(/\./g, '_')),
-			name: 'data[' + field.join('][') + ']',
+			name: (opts.type === 'file' ? 'file[' : 'data[') + field.join('][') + ']',
 			type: 'text',
 			value: opts.type === 'checkbox' ? 1 : this._value(this._post, fieldName),
 			wrap: opts.type === 'hidden' ? null : this.settings.wrap,
 			wrapClass: 'input ' + (opts.type || 'text'),
 			placeholder: null,
-			label: amp.string.humanize(opts.loop ? field[2] : field[1])
+			label: opts.type === 'hidden' ? false : amp.string.humanize(opts.loop ? field[2] : field[1])
 		}, opts);
 
 		if (!options.value && options.default) {
@@ -166,35 +186,59 @@ module.exports = amp.Class.extend({
 			after	= html.closeTag(options.wrap);
 		}
 
-		if (!options.label && options.type === 'hidden') {
-			options.label = false;
-		}
+		switch (options.type) {
+			case 'select':
+				tag = this._select(fieldName, options);
+			break;
 
-		if (options.type === 'select') {
-			tag = this._select(fieldName, options);
-		}
-		else if (options.type === 'textarea') {
-			tag = html.createTag('textarea', options.value, {
-				class: options.class,
-				id: options.id,
-				name: options.name,
-				cols: options.cols,
-				rows: options.rows,
-				placeholder: options.placeholder
-			});
-		} else {
-			tag = html.openTag('input', {
-				class: options.class,
-				id: options.id,
-				name: options.name,
-				type: options.type,
-				value: options.value,
-				placeholder: options.placeholder
-			});
+			case 'textarea':
+				tag = html.createTag('textarea', options.value, {
+					class: options.class,
+					id: options.id,
+					name: options.name,
+					cols: options.cols,
+					rows: options.rows,
+					placeholder: Gettext.gettext(options.placeholder)
+				});
+			break;
+
+			case 'radio':
+				for (i in options.options) {
+					tag += html.openTag('label', {
+						class: options.labelClass || options.type
+					});
+
+					tag += html.openTag('input', {
+						class: options.class,
+						id: options.id + amp.string.camelize('_' + i),
+						name: options.name,
+						type: options.type,
+						value: i,
+						checked: String(options.checked || options.value) === i
+					});
+
+					tag += ' ' + html.createTag('span', Gettext.gettext(options.options[i]));
+
+					tag += html.closeTag('label');
+				}
+			break;
+
+			default:
+				tag = html.openTag('input', {
+					class: options.class,
+					id: options.id,
+					name: options.name,
+					type: options.type,
+					value: options.value,
+					placeholder: Gettext.gettext(options.placeholder),
+					required: options.required ? true : null,
+					pattern: options.pattern
+				});
+			break;
 		}
 
 		if (options.label !== false) {
-			options.label = this.label(fieldName, options.label, {for: options.id});
+			label = this.label(fieldName, options.label, {for: options.id});
 		}
 
 		return before + label + tag + after;
@@ -226,7 +270,7 @@ module.exports = amp.Class.extend({
 				opts.options[i] = opts.options[i].join(' ');
 			}
 
-			ret += html.createTag('option', opts.options[i], {
+			ret += html.createTag('option', Gettext.gettext(opts.options[i]), {
 				value: i,
 				selected: String(opts.value) === String(i)
 			});
@@ -241,3 +285,7 @@ module.exports = amp.Class.extend({
 		return dottie.get(data, fieldName) || dottie.get(data, this._open + '.' + fieldName);
 	}
 });
+
+validators = {
+	phone_number: '^(?:(?:\\+?1\\s*(?:[.-]\\s*)?)?(?:\\(\\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\\s*\\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\\s*(?:[.-]\\s*)?)([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\\s*(?:[.-]\\s*)?([0-9]{4})(?:\\s*(?:#|x\\.?|ext\\.?|extension)\\s*(\\d+))?$'
+};

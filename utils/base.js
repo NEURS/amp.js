@@ -184,6 +184,37 @@ dbDefaults = {
 		charset: 'utf8',
 		collate: 'utf8_general_ci',
 		classMethods: {
+			enumValues: function (field, object) {
+				var attribute, values;
+
+				if (!field) {
+					console.log('No field provided for Model#enumValues()');
+					return null;
+				}
+
+				attribute = this.rawAttributes[field];
+
+				if (!attribute) {
+					console.log('Field "' + String(field) + '" does not exist in table: ' + this.tableName);
+					return null;
+				} else if (String(attribute.type) !== String(db.ENUM)) {
+					console.log('Field "' + String(field) + '" is not ENUM in table: ' + this.tableName);
+					return null;
+				}
+
+				if (object && Array.isArray(attribute.values)) {
+					values = {};
+
+					attribute.values.forEach(function (value) {
+						values[value] = amp.string.humanize(value);
+					});
+
+					return values;
+				}
+
+				return attribute.values;
+			},
+
 			list: function (fields, options) {
 				var nameFields	= fields,
 					valueField	= 'id',
@@ -231,12 +262,90 @@ dbDefaults = {
 					event.emit('success', ret);
 				}).error(function (error) {
 					event.emit('error', error);
+				}).on('sql', function (sql) {
+					event.emit('sql', sql);
 				});
 
 				return event;
 			}
 		},
-		//instanceMethods: {},
+		instanceMethods: {
+			setParent: function (parent_id, created, callback) {
+				var parentData,
+					_this	= this,
+					model	= this.daoFactory;
+
+				if (typeof parent_id === 'function') {
+					callback	= parent_id;
+					parent_id	= this.parent_id;
+					created		= true;
+				} else if (typeof created === 'function') {
+					callback	= created;
+					created		= true;
+				}
+
+				if (typeof parent_id === 'object') {
+					if (parent_id.daoFactoryName != this.daoFactoryName) {
+						callback(new Error('Model#setParent Error: Parent DAO does not match this DAO'));
+						return;
+					}
+
+					parent_id = parent_id.dataValues.id;
+				}
+
+				if (this.dataValues.id == parent_id) {
+					callback(new Error('Model#setParent Error: Parent ID cannot equal this ID'));
+					return;
+				}
+
+				function _sync(shift, direction, conditions, field) {
+					var attributes = {};
+
+					if (!field || field === 'both') {
+						_sync(shift, direction, conditions, 'lft');
+
+						field = 'rght';
+					}
+
+					if (created) {
+						conditions = [field + ' ' + conditions + ' AND id != ?', _this.dataValues.id];
+					}
+
+					attributes[field] = {
+						_raw: [field, direction, shift].join(' ')
+					};
+
+					return model.update(attributes, conditions);
+				}
+
+				model.find({
+					where: {id: parent_id},
+					attributes: ['id', 'lft', 'rght']
+				}).success(function (parent) {
+					if (!parent) {
+						callback(new Error('Model#setParent Error: Could not find parent (ID: ' + parent_id + ') in ' + model.name));
+						return;
+					}
+
+					if ((_this.dataValues.lft < parent.dataValues.lft) && (_this.dataValues.rght > parent.dataValues.rght)) {
+						callback(new Error('Model#setParent Error: Parent is a child of this'));
+						return;
+					}
+
+					if (!_this.dataValues.lft && !_this.dataValues.rght) {
+						_sync(2, '+', '>= ' + parent.dataValues.rght).success(function () {
+							_this.parent_id	= parent_id;
+							_this.lft		= parent.dataValues.rght;
+							_this.rght		= parent.dataValues.rght + 1;
+
+							_this.save(['parent_id', 'lft', 'rght']).success(function () {
+								callback();
+							}).error(callback);
+						}).error(callback);
+					}
+				}).error(callback);
+			}
+		},
 		timestamps: true
 	},
 	sync: {

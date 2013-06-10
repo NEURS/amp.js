@@ -3,7 +3,9 @@ var mimeTypes,
 	fs		= require('fs'),
 	qs		= require('qs'),
 	util	= require('util'),
-	emitter	= require('events').EventEmitter;
+	dottie	= require('dottie'),
+	accept	= require('http-accept'),
+	zlib	= require('zlib');
 
 mimeTypes = {
 	'.txt': 'text/plain',
@@ -141,8 +143,18 @@ module.exports = {
 			return;
 		}
 
+		accept(req, resp, Function);
+
+		if (req.accept.encodings) {
+			req.accept.bestEncoding = req.accept.encodings.getBestMatch(['gzip', 'deflate']) || 'identity';
+		} else {
+			req.accept.bestEncoding = 'identity';
+		}
+
 		if (req.method === 'GET' && parsed.pathname !== '/') {
 			fs.exists(fpath, function (file) {
+				var encoding = 'identity';
+
 				if (file === false) {
 					return _this.setUp(req, resp);
 				}
@@ -155,11 +167,23 @@ module.exports = {
 				});
 
 				resp.setHeader('Content-Type', mimeTypes[path.extname(fpath)] || mimeTypes.other);
-				resp.writeHead(200);
 
-				util.pump(stream, resp, function (error) {
-					resp.end();
-				});
+				switch (req.accept.bestEncoding) {
+					case 'deflate':
+						resp.writeHead(200, {'Content-Encoding': 'deflate'});
+						stream.pipe(zlib.createDeflate()).pipe(resp);
+					break;
+
+					case 'gzip':
+						resp.writeHead(200, {'Content-Encoding': 'gzip'});
+						stream.pipe(zlib.createGzip()).pipe(resp);
+					break;
+
+					default:
+						resp.writeHead(200);
+						stream.pipe(resp);
+					break;
+				}
 			});
 		} else {
 			_this.setUp(req, resp);
@@ -171,7 +195,7 @@ module.exports = {
 			matches	= this.getMatches(parsed.pathname);
 
 		if (!matches.length) {
-			resp.writeHead(404, {'Content-Type': mimeTypes['.html']});
+			resp.writeHead(404, {'Content-Type': mimeTypes['.html'] + '; charset=utf-8'});
 			resp.end();
 
 			console.log('No matches for: ' + parsed.pathname);
@@ -179,8 +203,7 @@ module.exports = {
 			return;
 		}
 
-		var parsedEvent	= new emitter(),
-			route		= matches.pop(),
+		var route		= matches.pop(),
 			controller	= new (require(amp.constants.app_path + '/' + route.path));
 
 		req.data			= null;
@@ -193,67 +216,68 @@ module.exports = {
 
 		controller.request.query = qs.parse(parsed.query);
 
-		parsedEvent.on('parseEnd', function () {
+		function parseEnd() {
 			controller._init.call(controller);
 			controller._common.call(controller);
 
 			if (!controller._rendered) { // redirected or just plain rendered
 				controller[route.action].apply(controller, route.params);
 			}
-		});
+		}
 
 		if (req.method === 'POST') {
-			var body	= '',
-				parsers	= 1;
-
-			req.on('data', function (chunk) {
-				body += chunk.toString();
-			});
-
-			req.on('end', function () {
-				var data = qs.parse(body);
-
-				controller.request.rawData = body;
-
-				if (data && data.data) {
-					controller.request.data = data.data;
-				}
-
-				if (!--parsers) {
-					parsedEvent.emit('parseEnd');
-				}
-			});
+			var body = '';
 
 			if (req.headers['content-type'].match(/multipart/i)) {
 				var multipart	= require('parted').multipart,
 					parser		= new multipart(req.headers['content-type']);
 
-				parsers++;
-
 				parser.on('error', function (error) {
-					if (!--parsers) {
-						parsedEvent.emit('parseEnd');
+					parseEnd();
+				});
+
+				parser.on('part', function (field, part) {
+					field = field.replace(/\[/g, '.').replace(/]/g, '').split(/\./);
+
+					if (field[0] === 'data') {
+						if (!controller.request.data) {
+							controller.request.data = {};
+						}
+
+						dottie.set(controller.request.data, field.splice(1).join('.'), part);
+					} else if (field[0] === 'file') {
+						if (!controller.request.files) {
+							controller.request.files = {};
+						}
+
+						dottie.set(controller.request.files, field.splice(1).join('.'), part);
 					}
 				});
 
 				parser.on('end', function () {
-					if (!--parsers) {
-						parsedEvent.emit('parseEnd');
-					}
-				});
-
-				parser.on('part', function (field, part) {
-					if (!controller.request.files) {
-						controller.request.files = {};
-					}
-
-					controller.request.files[field] = part;
+					parseEnd();
 				});
 
 				req.pipe(parser);
+			} else {
+				req.on('data', function (chunk) {
+					body += chunk.toString();
+				});
+
+				req.on('end', function () {
+					var data = qs.parse(body);
+
+					controller.request.rawData = body;
+
+					if (data && data.data) {
+						controller.request.data = data.data;
+					}
+
+					parseEnd();
+				});
 			}
 		} else {
-			parsedEvent.emit('parseEnd');
+			parseEnd();
 		}
 	},
 

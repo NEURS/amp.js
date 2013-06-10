@@ -1,5 +1,6 @@
-var amp	= require('../utils/base'),
-	fs	= require('fs');
+var amp		= require('../utils/base'),
+	fs		= require('fs'),
+	zlib	= require('zlib');
 
 /**
  * TODO:
@@ -9,18 +10,18 @@ module.exports = amp.Class.extend({
 	_viewEngine: null,
 	_rendered: false,
 
-	_components: [],
-	_models: [],
-	_helpers: [],
+	_components: null,
+	_models: null,
+	_helpers: null,
 
 	_layout: 'default',
 
 	/* Default Headers */
 	_defaultHeaders: {
-		'Content-Type': 'text/html'
+		'Content-Type': 'text/html;charset=utf-8'
 	},
 
-	_data: {},
+	_data: null,
 	_set: function (name, value, looped) {
 		if (typeof name === 'object') {
 			if (looped) {
@@ -41,6 +42,13 @@ module.exports = amp.Class.extend({
 	_common: function () {},
 	_beforeRender: function () {},
 	_afterRender: function () {},
+
+	init: function () {
+		this._components	= [];
+		this._models		= [];
+		this._helpers		= [];
+		this._data			= {};
+	},
 
 	/* Utility Component/Model Loader */
 	_import: function (type, className) {
@@ -195,15 +203,42 @@ module.exports = amp.Class.extend({
 		}
 
 		if (content.length) {
-			this.response.setHeader('Content-Length', Buffer.byteLength(content, 'utf8'));
-			this.response.writeHead(code);
-			this.response.write(content);
+			switch (this.request.accept.bestEncoding) {
+				case 'deflate':
+					zlib.deflate(content, this._compressCallback(code, content, 'deflate'));
+				break;
+
+				case 'gzip':
+					zlib.gzip(content, this._compressCallback(code, content, 'gzip'));
+				break;
+
+				default:
+					this._compressCallback(code, content, 'identity')(true);
+				break;
+			}
 		} else {
 			this.response.writeHead(code);
+			this.response.end();
 		}
 
-		this.response.end();
-
 		this._rendered = true;
+	},
+
+	_compressCallback: function (code, content, type) {
+		var _this = this;
+
+		return function (err, buffer) {
+			if (err) {
+				_this.response.setHeader('Content-Length', Buffer.byteLength(content, 'utf8'));
+				_this.response.writeHead(code);
+				_this.response.write(content);
+			} else {
+				_this.response.setHeader('Content-Length', buffer.length);
+				_this.response.writeHead(code, {'Content-Encoding': type});
+				_this.response.write(buffer.toString('utf8'));
+			}
+
+			_this.response.end();
+		}
 	}
 });
