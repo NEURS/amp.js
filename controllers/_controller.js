@@ -235,7 +235,7 @@ module.exports = amp.Class.extend({
 			} else {
 				_this.response.setHeader('Content-Length', buffer.length);
 				_this.response.writeHead(code, {'Content-Encoding': type});
-				_this.response.write(buffer.toString('utf8'));
+				_this.response.write(buffer);
 			}
 
 			_this.response.end();

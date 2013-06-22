@@ -56,7 +56,8 @@ amp = module.exports = {
 				}
 			}
 
-			amp.db = new db(config.database, config.username, config.password, config);
+			amp.db			= new db(config.database, config.username, config.password, config);
+			amp.db.Utils	= db.Utils;
 		}
 	},
 	extend: function () {
@@ -111,7 +112,7 @@ amp = module.exports = {
 		});
 	},
 	Class: (function () {
-		var Class		   = function () {},
+		var Class			= function () {},
 			initializing	= false;
 
 		Class.extend = function (prop) {

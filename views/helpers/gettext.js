@@ -2,6 +2,12 @@ var amp		= require('../../utils/base'),
 	fs		= require('fs'),
 	Gettext	= require('node-gettext'),
 	gettext	= new Gettext();
+	
+String.prototype.format = function () {
+	Array.prototype.unshift.call(arguments, this);
+
+	return amp.string.sprintf.apply(amp.string, arguments);
+};
 
 module.exports = amp.Class.extend({
 	_gettext: null,
@@ -66,6 +72,6 @@ module.exports = amp.Class.extend({
 
 		gettext.textdomain(domain);
 
-		return gettext.dnpgettext(domain, context, msgid, msgid_plural, n);
+		return gettext.dnpgettext(domain, context, msgid, msgid_plural, n) || '';
 	}
 });

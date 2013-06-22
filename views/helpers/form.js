@@ -1,14 +1,15 @@
 var validators, // at the bottom
 	amp		= require('../../utils/base'),
 	dottie	= require('dottie'),
-	html	= new (require('./html')),
-	Gettext	= new (require('./gettext'));
+	gettext	= require('./gettext'),
+	html	= new (require('./html'));
 
 module.exports = amp.Class.extend({
 	_open: false,
 	_post: null,
 	_data: null,
 	_loops: null,
+	_gettext: null,
 
 	get validators() {
 		return validators;
@@ -19,9 +20,10 @@ module.exports = amp.Class.extend({
 	},
 
 	init: function (request, data) {
-		this._post	= request.data;
-		this._data	= data;
-		this._loops	= {};
+		this._gettext	= new gettext(request, data);
+		this._post		= request.data;
+		this._data		= data;
+		this._loops		= {};
 	},
 
 	create: function (model, options) {
@@ -87,7 +89,7 @@ module.exports = amp.Class.extend({
 
 		return before + html.openTag('input', {
 			type: 'submit',
-			value: Gettext.gettext(caption || 'Save'),
+			value: this._gettext.gettext(caption || 'Save'),
 			class: options.class
 		}) + after;
 	},
@@ -102,7 +104,7 @@ module.exports = amp.Class.extend({
 
 		options = options || {};
 
-		return html.createTag('label', Gettext.gettext(text), {
+		return html.createTag('label', this._gettext.gettext(text), {
 			class: options.class,
 			for: options.for || amp.string.camelize('_' + fieldName.replace(/\./, '_')),
 		});
@@ -198,9 +200,18 @@ module.exports = amp.Class.extend({
 					name: options.name,
 					cols: options.cols,
 					rows: options.rows,
-					placeholder: Gettext.gettext(options.placeholder)
+					placeholder: this._gettext.gettext(options.placeholder),
+					required: options.required ? true : null
 				});
 			break;
+
+			case 'checkbox':
+				if (!options.options) {
+					options.options = {};
+					options.options[options.value] = {label: options.label, checked: options.checked};
+					options.label = false;
+				}
+			// no break;
 
 			case 'radio':
 				for (i in options.options) {
@@ -214,13 +225,16 @@ module.exports = amp.Class.extend({
 						name: options.name,
 						type: options.type,
 						value: i,
-						checked: String(options.checked || options.value) === i
+						checked: options.options[i].checked != null ? options.options[i].checked : (String(options.type === 'radio' ? options.value : '') === i)
 					});
 
-					tag += ' ' + html.createTag('span', Gettext.gettext(options.options[i]));
+					if (options.options[i].label) {
+						tag += ' ' + html.createTag('span', this._gettext.gettext(options.options[i].label));
+					}
 
 					tag += html.closeTag('label');
 				}
+			break;
 			break;
 
 			default:
@@ -230,7 +244,7 @@ module.exports = amp.Class.extend({
 					name: options.name,
 					type: options.type,
 					value: options.value,
-					placeholder: Gettext.gettext(options.placeholder),
+					placeholder: this._gettext.gettext(options.placeholder),
 					required: options.required ? true : null,
 					pattern: options.pattern
 				});
@@ -270,7 +284,7 @@ module.exports = amp.Class.extend({
 				opts.options[i] = opts.options[i].join(' ');
 			}
 
-			ret += html.createTag('option', Gettext.gettext(opts.options[i]), {
+			ret += html.createTag('option', this._gettext.gettext(opts.options[i]), {
 				value: i,
 				selected: String(opts.value) === String(i)
 			});
@@ -282,7 +296,7 @@ module.exports = amp.Class.extend({
 	},
 
 	_value: function (data, fieldName) {
-		return dottie.get(data, fieldName) || dottie.get(data, this._open + '.' + fieldName);
+		return dottie.get(data, fieldName) || dottie.get(data, this._open + '.' + fieldName) || '';
 	}
 });
 
