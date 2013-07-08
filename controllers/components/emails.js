@@ -109,7 +109,7 @@ module.exports = amp.Component.extend({
 		}
 
 		if (this.use) {
-			this.use.send(message, callback);
+			this.use.send(message, callback || Function);
 		} else {
 			throw new Error('No Emailer chosen. Please configure Emails in APP/config/core.js');
 		}
