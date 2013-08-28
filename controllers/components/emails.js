@@ -53,7 +53,9 @@ module.exports = amp.Component.extend({
 			helpers: []
 		}, message || {});
 
-		message.html = this._render(message.layout, message.template, message.helpers);
+		if (!message.html) {
+			message.html = this._render(message.layout, message.template, message.helpers);
+		}
 
 		if (Array.isArray(message.attachment) && message.attachment.length > 0)
 		{
@@ -94,7 +96,7 @@ module.exports = amp.Component.extend({
 							message.attachment[i].data = file;
 
 							if (streams === 0) {
-								_this.use.send(message)
+								_this.use.send(message, callback || Function);
 							}
 						});
 					})(i, stream);

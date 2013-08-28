@@ -35,7 +35,13 @@ amp = module.exports = {
 			host = '(localhost|' + host + ')';
 		}
 
-		this.config.host = '^' + host + ':(' + [http, https].join('|').replace(/[|]?false[|]?/, '') + ')$';
+		this.config.host = '^' + host + '(:' + [http, https].join('|').replace(/[|]?false[|]?/, '') + ')';
+
+		if (http == 80 || https == 80) {
+			this.config.host += '?';
+		}
+
+		this.config.host += '$';
 
 		if (typeof amp.config.database === 'object' && amp.config.database !== null) {
 			amp.deepExtend(config, dbDefaults);
