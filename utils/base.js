@@ -24,10 +24,10 @@ amp = module.exports = {
 	stores: {},
 	constants: paths,
 	config: config,
-	init: function (host, http, https) {
+	init: function (host, ports) {
 		var config = {};
 
-		if (!host || !host.length || !host.match(/^[A-Za-z0-9.-]+$/) || isNaN(http) || (https && isNaN(https))) {
+		if (!host || !host.length || !host.match(/^[A-Za-z0-9.-]+$/)) {
 			throw new Error('Host name required!');
 		}
 
@@ -35,9 +35,13 @@ amp = module.exports = {
 			host = '(localhost|' + host + ')';
 		}
 
-		this.config.host = '^' + host + '(:' + [http, https].join('|').replace(/[|]?false[|]?/, '') + ')';
+		if (!ports || !ports.length) {
+			ports = [80];
+		}
 
-		if (http == 80 || https == 80) {
+		this.config.host = '^' + host + '(:' + ports.join('|:').replace(/[|]?false[|]?/, '') + ')';
+
+		if (ports.indexOf(80)) {
 			this.config.host += '?';
 		}
 

@@ -96,7 +96,7 @@ module.exports = amp.Component.extend({
 							message.attachment[i].data = file;
 
 							if (streams === 0) {
-								_this.use.send(message, callback || Function);
+								_this.use.send(message, callback);
 							}
 						});
 					})(i, stream);
@@ -111,7 +111,7 @@ module.exports = amp.Component.extend({
 		}
 
 		if (this.use) {
-			this.use.send(message, callback || Function);
+			this.use.send(message, callback);
 		} else {
 			throw new Error('No Emailer chosen. Please configure Emails in APP/config/core.js');
 		}
