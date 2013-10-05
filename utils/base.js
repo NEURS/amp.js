@@ -310,7 +310,7 @@ dbDefaults = {
 				}
 
 				function _sync(shift, direction, conditions, field) {
-					var attributes = {};
+					var set;
 
 					if (!field || field === 'both') {
 						_sync(shift, direction, conditions, 'lft');
@@ -319,14 +319,12 @@ dbDefaults = {
 					}
 
 					if (created) {
-						conditions = [field + ' ' + conditions + ' AND id != ?', _this.dataValues.id];
+						conditions = [conditions, 'AND id !=', parseInt(_this.dataValues.id)].join(' ');
 					}
 
-					attributes[field] = {
-						_raw: [field, direction, shift].join(' ')
-					};
+					set = [field, direction, shift].join(' ');
 
-					return model.update(attributes, conditions);
+					return amp.db.query('UPDATE accounts SET ' + field + ' = ' + set + ' WHERE ' + field + ' ' + conditions);
 				}
 
 				model.find({
