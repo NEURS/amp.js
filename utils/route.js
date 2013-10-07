@@ -143,8 +143,8 @@ module.exports = {
 			return;
 		}
 
-		//req.connection.setNoDelay(true);
-		//req.connection.setTimeout(0);
+		req.connection.setNoDelay(true);
+		req.connection.setTimeout(0);
 
 		accept(req, resp, Function);
 

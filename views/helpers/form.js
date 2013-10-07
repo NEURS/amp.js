@@ -235,7 +235,6 @@ module.exports = amp.Class.extend({
 					tag += html.closeTag('label');
 				}
 			break;
-			break;
 
 			default:
 				tag = html.openTag('input', {

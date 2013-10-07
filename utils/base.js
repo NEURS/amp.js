@@ -41,7 +41,7 @@ amp = module.exports = {
 
 		this.config.host = '^' + host + '(:' + ports.join('|:').replace(/[|]?false[|]?/, '') + ')';
 
-		if (ports.indexOf(80)) {
+		if (ports.indexOf(80) >= 0) {
 			this.config.host += '?';
 		}
 
