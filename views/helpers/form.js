@@ -242,10 +242,11 @@ module.exports = amp.Class.extend({
 					id: options.id,
 					name: options.name,
 					type: options.type,
-					value: options.value,
+					value: 'value' in options ? options.value : options.default,
 					placeholder: this._gettext.gettext(options.placeholder),
 					required: options.required ? true : null,
-					pattern: options.pattern
+					pattern: options.pattern,
+					checked: options.checked
 				});
 			break;
 		}
