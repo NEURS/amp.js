@@ -230,6 +230,8 @@ module.exports = amp.Class.extend({
 
 					if (options.options[i].label) {
 						tag += ' ' + html.createTag('span', this._gettext.gettext(options.options[i].label));
+					} else {
+						tag += ' ' + html.createTag('span', this._gettext.gettext(amp.string.capitalize(i)));
 					}
 
 					tag += html.closeTag('label');
