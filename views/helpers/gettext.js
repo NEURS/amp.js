@@ -14,7 +14,10 @@ module.exports = amp.Class.extend({
 	_locale: null,
 
 	init: function (request, data) {
-		this.locale	= request.accept ? request.accept.languages.getBestMatch(amp.config.L10n.supported) : 'en_us';
+		this.locale	= (request.accept &&
+			request.accept.languages &&
+			request.accept.languages.getBestMatch(amp.config.L10n.supported)) ||
+			amp.config.L10n.supported[0];
 	},
 
 	set locale(value) {
