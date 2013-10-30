@@ -54,14 +54,14 @@ module.exports = amp.Component.extend({
 			email.TextBody = message.text;
 		}
 
-		if (Array.isArray(message.attachments) && message.attachments.length > 0) {
+		if (Array.isArray(message.attachment) && message.attachment.length > 0) {
 			email.Attachments = [];
 
-			for (i in message.attachments) {
+			for (i in message.attachment) {
 				email.Attachments.push({
-					Name: message.attachments[i].name,
-					Content: message.attachments[i].data.toString('base64'),
-					ContentType: message.attachments[i].contentType,
+					Name: message.attachment[i].name,
+					Content: message.attachment[i].data.toString('base64'),
+					ContentType: message.attachment[i].contentType,
 				});
 			}
 		}
