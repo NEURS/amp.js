@@ -16,20 +16,20 @@
     }
   ],
   "dependencies": {
-    "colors": "0.6.0-1",
+    "colors": "0.6.2",
     "sequelize": "git://github.com/sequelize/sequelize.git",
-    "underscore.string": "2.3.1",
+    "underscore.string": "2.3.3",
     "lingo": "0.0.5",
     "qs": "0.6.5",
-    "ect": "0.5.2",
+    "ect": "0.5.4",
     "mkdirp": "0.3.5",
-    "less": "1.3.3",
+    "less": "1.5.0",
     "cookies": "0.3.6",
-    "keygrip": "0.2.2",
-    "dottie": "0.0.7-0",
+    "keygrip": "0.2.4",
+    "dottie": "0.0.8-0",
     "parted": "0.1.1",
     "http-accept": "0.1.1-3",
-    "node-gettext": "0.2.11",
+    "node-gettext": "0.2.14",
     "async": "0.2.9"
   },
   "repository": {
