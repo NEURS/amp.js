@@ -13,28 +13,41 @@ module.exports = amp.Component.extend({
 	session: null,
 	cookies: null,
 
-	init: function (controller) {
-		this._super.init(controller);
+	_init: function (cb) {
+		this.session	= {};
+		this.cookies	= this.controller.Cookies || new (require('./cookies'))(this.controller);
 
-		this.cookies = controller.Cookies || new (require('./cookies'))(controller);
-		this.session = controller.request.session = store.get('session.' + this.id) || {}; // initialize session
+		this.cookies.set(config.cookie.name, this.id, config.cookie);
 
-		this.cookies.set('SID', this.id, config.cookie);
+		if (this.controller.request.session) {
+			this.session = this.controller.request.session;
+
+			cb();
+		} else {
+			store.get(config.cookie.name + this.id, function (err, result) {
+				if (result) {
+					this.session = result;
+				}
+
+				cb();
+			}.bind(this));
+		}
 	},
 
-	destroy: function () {
-		store.del('session.' + this.id);
+	destroy: function (cb) {
+		store.del(config.cookie.name + this.id, function () {
+			this.session	= this.controller.request.session = {};
+			this._id		= this._create(); // generate new id
 
-		this.session = this.controller.request.session = {};
+			this.cookies.set(config.cookie.name, this.id, config.cookie);
 
-		this._id = this._create(); // generate new id
-
-		this.cookies.set('SID', this.id, config.cookie);
+			cb();
+		}.bind(this));
 	},
 
 	get id() {
 		if (!this._id) {
-			this._id = this.cookies.get('SID') || this._create();
+			this._id = this.cookies.get(config.cookie.name) || this._create();
 		}
 
 		return this._id;
@@ -49,28 +62,46 @@ module.exports = amp.Component.extend({
 			});
 	},
 
-	get: function (key) {
-		return dottie.get(this.session, key);
+	get: function (key, cb) {
+		key = key.replace(/^User(\.|$)/, 'Auth.Account$1');
+
+		if (!cb) {
+			return dottie.get(this.session, key);
+		}
+
+		store.get(config.cookie.name + this.id, function (err, result) {
+			if (err) {
+				
+			} else {
+				cb(null, dottie.get(result, key));
+			}
+		});
 	},
 
-	set: function (key, value) {
+	set: function (key, value, cb) {
+		key = key.replace(/^User(\.|$)/, 'Auth.Account$1');
+
 		dottie.set(this.session, key, value);
 
 		this.controller.request.session = this.session;
 
-		store.set('session.' + this.id, this.session, 0);
+		store.set(config.cookie.name + this.id, this.session, 0, cb);
 	},
 
-	del: function (key) {
-		this.set(key, undefined);
+	del: function (key, cb) {
+		key = key.replace(/^User(\.|$)/, 'Auth.Account$1');
+
+		dottie.set(this.session, key, undefined);
+
+		store.del(key, cb);
 	},
 
-	flash: function (type, message) {
+	flash: function (type, message, cb) {
 		if (!message) {
 			message	= type;
 			type	= 'general';
 		}
 
-		this.set('_flash.' + type, message);
+		this.set('_flash.' + type, message, cb);
 	}
 });

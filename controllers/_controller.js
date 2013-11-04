@@ -1,6 +1,7 @@
 var amp		= require('../utils/base'),
 	fs		= require('fs'),
-	zlib	= require('zlib');
+	zlib	= require('zlib'),
+	async	= require('async');
 
 /**
  * TODO:
@@ -39,7 +40,9 @@ module.exports = amp.Class.extend({
 	},
 
 	/* Callbacks */
-	_common: function () {},
+	_common: function (cb) {
+		cb();
+	},
 	_beforeRender: function () {},
 	_afterRender: function () {},
 
@@ -51,7 +54,7 @@ module.exports = amp.Class.extend({
 	},
 
 	/* Utility Component/Model Loader */
-	_import: function (type, className) {
+	_import: function (type, className, cb) {
 		if (!!this[className]) {
 			return;
 		}
@@ -67,6 +70,8 @@ module.exports = amp.Class.extend({
 				}
 
 				this[className] = new (this[className])(this);
+				this[className]._init(cb);
+				return;
 			break;
 
 			case 'model':
@@ -97,25 +102,20 @@ module.exports = amp.Class.extend({
 				//this[className].sync();
 			break;
 		}
+
+		cb && cb();
 	},
 
-	_init: function () {
-		var i, name;
+	_init: function (cb) {
+		var i, name,
+			_this = this;
 
 		for (i in this._defaultHeaders) {
 			this.response.setHeader(i, this._defaultHeaders[i]);
 		}
 
-		for (i in this._components) {
-			this._import('Component', this._components[i]);
-		}
-
 		if ((Array.isArray(this._models) && this._models.length === 0) || this._models === null) {
 			this._models = [amp.string.classify(amp.lang.singularize(this._name))];
-		}
-
-		for (i in this._models) {
-			this._import('Model', this._models[i]);
 		}
 
 		this._viewEngine = new (require('../views/engines/' + amp.config.view))(this.request, this.response);
@@ -124,6 +124,16 @@ module.exports = amp.Class.extend({
 			controller: this._name,
 			action: this.request.route.action,
 			title: amp.string.capitalize(this.request.route.action)
+		});
+
+		async.each(this._components, function (item, callback) {
+			_this._import('Component', item, callback);
+		}, function (err) {
+			async.each(_this._models, function (item, callback) {
+				_this._import('Model', item, callback);
+			}, function (err) {
+				cb && cb();
+			});
 		});
 	},
 

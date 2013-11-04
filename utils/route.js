@@ -156,15 +156,13 @@ module.exports = {
 
 		if (req.method === 'GET' && parsed.pathname !== '/') {
 			fs.exists(fpath, function (file) {
-				var encoding = 'identity';
+				var stream;
 
 				if (file === false) {
 					return _this.setUp(req, resp);
 				}
 
-				var stream = fs.createReadStream(fpath);
-
-				stream.on('error', function (error) {
+				stream = fs.createReadStream(fpath).on('error', function (error) {
 					resp.writeHead(500);
 					resp.end();
 				});
@@ -220,12 +218,21 @@ module.exports = {
 		controller.request.query = qs.parse(parsed.query);
 
 		function parseEnd() {
-			controller._init.call(controller);
-			controller._common.call(controller);
-
-			if (!controller._rendered) { // redirected or just plain rendered
-				controller[route.action].apply(controller, route.params);
-			}
+			controller._init.call(controller, function (err, result) {
+				if (err) {
+					
+				} else {
+					controller._common.call(controller, function (err, result) {
+						if (err) {
+							
+						} else {
+							if (!controller._rendered) { // redirected or just plain rendered
+								controller[route.action].apply(controller, route.params);
+							}
+						}
+					});
+				}
+			});
 		}
 
 		if (req.method === 'POST') {

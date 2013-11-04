@@ -5,5 +5,9 @@ module.exports = amp.Class.extend({
 
 	init: function (controller) {
 		this.controller = controller;
+	},
+
+	_init: function (cb) {
+		cb && cb();
 	}
 });
