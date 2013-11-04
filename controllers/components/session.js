@@ -17,10 +17,10 @@ module.exports = amp.Component.extend({
 		this.session	= {};
 		this.cookies	= this.controller.Cookies || new (require('./cookies'))(this.controller);
 
-		this.cookies.set(config.cookie.name, this.id, config.cookie);
-
 		if (this.controller.request.session) {
 			this.session = this.controller.request.session;
+
+			this._setCookie();
 
 			cb();
 		} else {
@@ -29,9 +29,15 @@ module.exports = amp.Component.extend({
 					this.session = result;
 				}
 
+				this._setCookie();
+
 				cb();
 			}.bind(this));
 		}
+	},
+
+	_setCookie: function () {
+		this.cookies.set(config.cookie.name, this.id, config.cookie);
 	},
 
 	destroy: function (cb) {
@@ -63,8 +69,6 @@ module.exports = amp.Component.extend({
 	},
 
 	get: function (key, cb) {
-		key = key.replace(/^User(\.|$)/, 'Auth.Account$1');
-
 		if (!cb) {
 			return dottie.get(this.session, key);
 		}
@@ -79,8 +83,6 @@ module.exports = amp.Component.extend({
 	},
 
 	set: function (key, value, cb) {
-		key = key.replace(/^User(\.|$)/, 'Auth.Account$1');
-
 		dottie.set(this.session, key, value);
 
 		this.controller.request.session = this.session;
@@ -89,8 +91,6 @@ module.exports = amp.Component.extend({
 	},
 
 	del: function (key, cb) {
-		key = key.replace(/^User(\.|$)/, 'Auth.Account$1');
-
 		dottie.set(this.session, key, undefined);
 
 		store.del(key, cb);
