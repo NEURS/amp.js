@@ -171,12 +171,12 @@ module.exports = {
 
 				switch (req.accept.bestEncoding) {
 					case 'deflate':
-						resp.writeHead(200, {'Content-Encoding': 'deflate'});
+						resp.writeHead(200, {'Content-Encoding': 'deflate', 'Vary': 'Accept-Encoding'});
 						stream.pipe(zlib.createDeflate()).pipe(resp);
 					break;
 
 					case 'gzip':
-						resp.writeHead(200, {'Content-Encoding': 'gzip'});
+						resp.writeHead(200, {'Content-Encoding': 'gzip', 'Vary': 'Accept-Encoding'});
 						stream.pipe(zlib.createGzip()).pipe(resp);
 					break;
 
