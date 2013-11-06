@@ -155,19 +155,23 @@ module.exports = {
 		}
 
 		if (req.method === 'GET' && parsed.pathname !== '/') {
-			fs.exists(fpath, function (file) {
-				var stream;
+			fs.stat(fpath, function (err, stat) {
+				var stream, lm;
 
-				if (file === false) {
+				if (err || !stat.isFile()) {
 					return _this.setUp(req, resp);
 				}
 
-				stream = fs.createReadStream(fpath).on('error', function (error) {
+				mtime	= stat.mtime;
+				stream	= fs.createReadStream(fpath).on('error', function (error) {
 					resp.writeHead(500);
 					resp.end();
 				});
 
+				mtime.setMilliseconds(0);
+
 				resp.setHeader('Content-Type', mimeTypes[path.extname(fpath)] || mimeTypes.other);
+				resp.setHeader('Last-Modified', mtime.toUTCString());
 
 				switch (req.accept.bestEncoding) {
 					case 'deflate':
