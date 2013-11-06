@@ -1,6 +1,7 @@
 var amp		= require('../../utils/base'),
 	crypto	= require('crypto'),
 	dottie	= require('dottie'),
+	cookies	= require('./cookies'),
 	config	= amp.config.session,
 	store	= amp.stores[config.store] || new (require('../../lib/stores/' + config.store))(config);
 
@@ -15,7 +16,7 @@ module.exports = amp.Component.extend({
 
 	_init: function (cb) {
 		this.session	= {};
-		this.cookies	= this.controller.Cookies || new (require('./cookies'))(this.controller);
+		this.cookies	= this.controller.Cookies || new cookies(this.controller);
 
 		if (this.controller.request.session) {
 			this.session = this.controller.request.session;
@@ -26,7 +27,7 @@ module.exports = amp.Component.extend({
 		} else {
 			store.get(config.cookie.name + this.id, function (err, result) {
 				if (result) {
-					this.session = result;
+					this.session = this.controller.request.session = result;
 				}
 
 				this._setCookie();
@@ -34,6 +35,8 @@ module.exports = amp.Component.extend({
 				cb();
 			}.bind(this));
 		}
+
+		this.controller.request.session_id = this.id;
 	},
 
 	_setCookie: function () {
