@@ -24,6 +24,7 @@ amp = module.exports = {
 	stores: {},
 	constants: paths,
 	config: config,
+	repl: config.repl ? require('./repl.js') : false,
 	init: function (host, ports) {
 		var config = {};
 
@@ -177,9 +178,9 @@ amp = module.exports = {
 	}
 };
 
-amp.route	= require('./route');
-amp.cache	= new (require('./cache'));
-amp.less	= new (require('./less'));
+amp.route	= require('./route.js');
+amp.cache	= new (require('./cache.js'));
+amp.less	= new (require('./less.js'));
 
 dbDefaults = {
 	database: 'ampjs',
