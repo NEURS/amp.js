@@ -60,20 +60,21 @@ module.exports = amp.Class.extend({
 	},
 
 	dnpgettext: function (domain, context, msgid, msgid_plural, n) {
-		var file;
+		var _domain, file;
 
-		domain = this.locale + "__" + (domain || 'default');
+		domain	= domain || 'default';
+		_domain	= this.locale + "__" + domain;
 
-		if (!gettext._domains[domain]) {
+		if (!gettext._domains[_domain]) {
 			file = amp.constants.locale + '/' + this.locale.toLowerCase().replace(/-/, '_') + '/LC_MESSAGES/' + domain + '.po';
 
 			if (fs.existsSync(file)) {
-				gettext.addTextdomain(domain, fs.readFileSync(file));
+				gettext.addTextdomain(_domain, fs.readFileSync(file));
 			}
 		}
 
-		gettext.textdomain(domain);
+		gettext.textdomain(_domain);
 
-		return gettext.dnpgettext(domain, context, msgid, msgid_plural, n) || '';
+		return gettext.dnpgettext(_domain, context, msgid, msgid_plural, n) || '';
 	}
 });
