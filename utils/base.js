@@ -264,11 +264,15 @@ dbDefaults = {
 						ret = {};
 
 					for (i = 0; i < list.length; i++) {
-						ret[list[i][valueField]] = [];
+						if (nameFields.length === 1) {
+							ret[list[i][valueField]] = list[i][nameFields[0]];
+						} else {
+							ret[list[i][valueField]] = [];
 
-						nameFields.forEach(function (value) {
-							ret[list[i][valueField]].push(list[i][value]);
-						});
+							nameFields.forEach(function (value) {
+								ret[list[i][valueField]].push(list[i][value]);
+							});
+						}
 					}
 
 					event.emit('success', ret);
