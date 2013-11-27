@@ -19,6 +19,10 @@ module.exports = amp.Class.extend({
 			amp.config.L10n.supported[0];
 	},
 
+	get _gettext() {
+		return gettext;
+	},
+
 	set locale(value) {
 		if (amp.config.L10n.supported.indexOf(value) > -1) {
 			this._locale = value;
