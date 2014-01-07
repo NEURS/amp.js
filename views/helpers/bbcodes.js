@@ -18,7 +18,7 @@ module.exports = amp.Class.extend({
 
 			body = body.replace(/\r/g, '');
 			body = body.replace(/\n\n/g, html.createTag('br') + html.createTag('br'));
-			body = body.replace(/\/wuploads\//, rootOrUploadsPath);
+			body = body.replace(/\/wuploads\//g, rootOrUploadsPath);
 		}
 
 		for (match in bbcodes) {
