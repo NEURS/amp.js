@@ -98,6 +98,14 @@ module.exports = {
 		params: '(/[/A-Za-z0-9_-]+)*?'
 	},
 
+	_cacheBust: /(.+)\.(?:\d+)\.(js|css|png|jpg|jpeg|gif)$/,
+	_cacheBustReplace: '$1.$2',
+
+	cacheBust: function (regexp, replace) {
+		this._cacheBust			= regexp;
+		this._cacheBustReplace	= replace
+	},
+
 	add: function (path, options) {
 		var i,
 			defaults,
@@ -132,7 +140,6 @@ module.exports = {
 
 	resolve: function (req, resp) {
 		var _this	= module.exports,
-			path	= require('path'),
 			parsed	= require('url').parse(req.url),
 			fpath	= amp.constants.app_path + '/webroot' + parsed.pathname;
 
@@ -155,44 +162,56 @@ module.exports = {
 		}
 
 		if (req.method === 'GET' && parsed.pathname !== '/') {
-			fs.stat(fpath, function (err, stat) {
-				var stream, lm;
-
-				if (err || !stat.isFile()) {
-					return _this.setUp(req, resp);
-				}
-
-				mtime	= stat.mtime;
-				stream	= fs.createReadStream(fpath).on('error', function (error) {
-					resp.writeHead(500);
-					resp.end();
-				});
-
-				mtime.setMilliseconds(0);
-
-				resp.setHeader('Content-Type', mimeTypes[path.extname(fpath)] || mimeTypes.other);
-				resp.setHeader('Last-Modified', mtime.toUTCString());
-
-				switch (req.accept.bestEncoding) {
-					case 'deflate':
-						resp.writeHead(200, {'Content-Encoding': 'deflate', 'Vary': 'Accept-Encoding'});
-						stream.pipe(zlib.createDeflate()).pipe(resp);
-					break;
-
-					case 'gzip':
-						resp.writeHead(200, {'Content-Encoding': 'gzip', 'Vary': 'Accept-Encoding'});
-						stream.pipe(zlib.createGzip()).pipe(resp);
-					break;
-
-					default:
-						resp.writeHead(200);
-						stream.pipe(resp);
-					break;
-				}
-			});
+			_this.resolveFile(req, resp, fpath);
 		} else {
 			_this.setUp(req, resp);
 		}
+	},
+
+	resolveFile: function (req, resp, fpath, _loop) {
+		var _this	= this,
+			path	= require('path');
+
+		fs.stat(fpath, function (err, stat) {
+			var stream, lm;
+
+			if (err || !stat.isFile()) {
+				if (!_loop && _this._cacheBust && _this._cacheBust.test(fpath)) {
+					fpath = fpath.replace(_this._cacheBust, _this._cacheBustReplace);
+					return _this.resolveFile(req, resp, fpath, true);
+				}
+
+				return _this.setUp(req, resp);
+			}
+
+			mtime	= stat.mtime;
+			stream	= fs.createReadStream(fpath).on('error', function (error) {
+				resp.writeHead(500);
+				resp.end();
+			});
+
+			mtime.setMilliseconds(0);
+
+			resp.setHeader('Content-Type', mimeTypes[path.extname(fpath)] || mimeTypes.other);
+			resp.setHeader('Last-Modified', mtime.toUTCString());
+
+			switch (req.accept.bestEncoding) {
+				case 'deflate':
+					resp.writeHead(200, {'Content-Encoding': 'deflate', 'Vary': 'Accept-Encoding'});
+					stream.pipe(zlib.createDeflate()).pipe(resp);
+				break;
+
+				case 'gzip':
+					resp.writeHead(200, {'Content-Encoding': 'gzip', 'Vary': 'Accept-Encoding'});
+					stream.pipe(zlib.createGzip()).pipe(resp);
+				break;
+
+				default:
+					resp.writeHead(200);
+					stream.pipe(resp);
+				break;
+			}
+		});
 	},
 
 	setUp: function (req, resp) {

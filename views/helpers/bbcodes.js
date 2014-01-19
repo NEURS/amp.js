@@ -90,10 +90,10 @@ bbcodes['href="([^"]+)"'] = ['urlencode'];
 videos = {
 	youtube: {
 		match: /(?:youtu\.be\/)|(?:v[=\/])([a-z0-9-]+)/i,
-		replace: '<iframe src="http://www.youtube.com/embed/%1$s" width="%2$s" height="%3$s" frameborder="0" allowfullscreen></iframe>'
+		replace: '<iframe src="//www.youtube.com/embed/%1$s" width="%2$s" height="%3$s" frameborder="0" allowfullscreen></iframe>'
 	},
 	vimeo: {
 		match: /vimeo\.com\/([0-9]{1,10})/i,
-		replace: '<iframe src="http://player.vimeo.com/video/%1$s?title=0&byline=0&portrait=0&autoplay=0" width="%2$s" height="%3$s" frameborder="0"></iframe>'
+		replace: '<iframe src="//player.vimeo.com/video/%1$s?title=0&byline=0&portrait=0&autoplay=0" width="%2$s" height="%3$s" frameborder="0"></iframe>'
 	}
 };
