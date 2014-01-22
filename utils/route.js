@@ -320,7 +320,7 @@ module.exports = {
 
 		for (i in amp.config['routes']) {
 			if (parts = url.match(new RegExp(i))) {
-				match	= amp.config['routes'][i];
+				match	= amp.extend({}, amp.config['routes'][i]);
 				params	= parts.slice(1).filter(Boolean);
 
 				if (match.keys.length) {
@@ -357,10 +357,10 @@ module.exports = {
 					controller = require(amp.constants.app_path + '/' + path);
 
 					if (!!controller.prototype[match.action]) {
-						amp.config['routes'][i].path	= path;
-						amp.config['routes'][i].params	= params;
+						match.path		= path;
+						match.params	= params;
 
-						matches.push(amp.config['routes'][i]);
+						matches.push(match);
 
 						// Continue going... Routes placed below others take precedence
 					}
