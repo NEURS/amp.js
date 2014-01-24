@@ -20,7 +20,7 @@ module.exports = amp.Component.extend({
 
 	_init: function (cb) {
 		this.use(options.type, options[options.type]);
-		cb();
+		cb && cb();
 	},
 
 	use: function (type, options) {
