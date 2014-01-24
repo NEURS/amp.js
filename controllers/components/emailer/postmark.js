@@ -1,14 +1,8 @@
 var amp			= require('amp.js'),
-	postmark	= require('postmark');
+	postmark	= require('postmark')(amp.config.email.postmark.api_key);
 
 module.exports = amp.Component.extend({
-	options: null,
-	postmark: null,
-
-	configure: function (options) {
-		this.options	= options;
-		this.postmark	= postmark(options.api_key);
-	},
+	configure: function () {},
 
 	send: function (message, callback) {
 		var i,
@@ -66,6 +60,6 @@ module.exports = amp.Component.extend({
 			}
 		}
 
-		return this.postmark.send(email, callback);
+		return postmark.send(email, callback);
 	}
 });

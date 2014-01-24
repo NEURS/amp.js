@@ -1,12 +1,13 @@
 var amp		= require('amp.js'),
 	fs		= require('fs'),
 	dottie	= require('dottie'),
-	valid	= ['postmark'],
+	valid	= ['postmark', 'sendgrid'],
 	options	= amp.config.email;
 
 module.exports = amp.Component.extend({
+	controller: null,
 	options: null,
-	use: null,
+	_use: null,
 
 	_queue: [],
 	_data: {},
@@ -14,14 +15,22 @@ module.exports = amp.Component.extend({
 	_viewEngine: null,
 
 	init: function (controller) {
-		this._super.init(controller);
+		this.controller = controller
+	},
 
-		if (valid.indexOf(options.type) > -1) {
-			this.controller._import('Component', 'Emailer/' + options.type);
+	_init: function (cb) {
+		this.use(options.type, options[options.type]);
+		cb();
+	},
 
-			this.use = this.controller['Emailer/' + options.type];
+	use: function (type, options) {
+		console.log(type, options);
+		if (valid.indexOf(type) > -1) {
+			this.controller._import('Component', 'Emailer/' + type);
 
-			this.use.configure(options);
+			this._use = this.controller['Emailer/' + type];
+
+			this._use.configure(options);
 		}
 	},
 
@@ -96,7 +105,7 @@ module.exports = amp.Component.extend({
 							message.attachment[i].data = file;
 
 							if (streams === 0) {
-								_this.use.send(message, callback);
+								_this._use.send(message, callback);
 							}
 						});
 					})(i, stream);
@@ -110,8 +119,8 @@ module.exports = amp.Component.extend({
 			}
 		}
 
-		if (this.use) {
-			this.use.send(message, callback);
+		if (this._use) {
+			this._use.send(message, callback);
 		} else {
 			throw new Error('No Emailer chosen. Please configure Emails in APP/config/core.js');
 		}
