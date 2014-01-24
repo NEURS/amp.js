@@ -24,7 +24,6 @@ module.exports = amp.Component.extend({
 	},
 
 	use: function (type, options) {
-		console.log(type, options);
 		if (valid.indexOf(type) > -1) {
 			this.controller._import('Component', 'Emailer/' + type);
 
