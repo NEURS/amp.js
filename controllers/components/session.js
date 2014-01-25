@@ -90,7 +90,7 @@ module.exports = amp.Component.extend({
 
 		this.controller.request.session = this.session;
 
-		store.set(config.cookie.name + this.id, this.session, 0, cb);
+		store.set(config.cookie.name + this.id, this.session, config.ttl || 172800, cb);
 	},
 
 	del: function (key, cb) {

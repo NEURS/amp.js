@@ -110,7 +110,7 @@ amp = module.exports = {
 			props = Object.getOwnPropertyNames(from);
 
 		props.forEach(function (name) {
-			if (typeof from[name] === 'object') {
+			if (from[name] && typeof from[name] === 'object') {
 				if (typeof dest[name] !== 'object') {
 					dest[name] = {}
 				}
