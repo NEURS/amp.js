@@ -61,9 +61,9 @@ amp = module.exports = {
 
 			if (amp.config.env !== 'development') {
 				if (config.username === 'root') {
-					throw new Error('DATABASE ERROR: User "root" cannot be used');
+					console.log('DATABASE WARNING: User "root" should not be used');
 				} else if (!config.password) {
-					throw new Error('DATABASE ERROR: Password cannot be empty');
+					console.log('DATABASE WARNING: Password should not be empty');
 				}
 			}
 
