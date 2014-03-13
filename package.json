@@ -1,7 +1,7 @@
 {
   "name": "amp.js",
   "description": "Node.JS MVC Framework",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "keywords": [
     "framework",
     "amp",
@@ -17,7 +17,7 @@
   ],
   "dependencies": {
     "colors": "0.6.2",
-    "sequelize": "git://github.com/sequelize/sequelize.git",
+    "sequelize": "1.7.0",
     "underscore.string": "2.3.3",
     "lingo": "0.0.5",
     "qs": "0.6.5",
