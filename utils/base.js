@@ -246,18 +246,20 @@ dbDefaults = {
 						nameFields = fields.slice(1);
 					} else {
 						nameFields	= [valueField];
-						fields		= [valueField, valueField];
+						fields		= [valueField];
 					}
 				} else {
 					nameFields	= [valueField];
-					fields		= [valueField, valueField];
+					fields		= [valueField];
 				}
 
 				if (!options) {
 					options = {};
 				}
 
-				options.attributes = fields;
+				options.attributes = fields.filter(function (value, index, self) {
+					return self.indexOf(value) === index;
+				});
 
 				this.findAll(options).success(function (list) {
 					var i,
