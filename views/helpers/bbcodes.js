@@ -11,6 +11,10 @@ module.exports = amp.Class.extend({
 		var match, match2, replace,
 			_this = this;
 
+		if (!body) {
+			return '';
+		}
+
 		if (rootOrUploadsPath) {
 			body = body.replace(/[&<>'"]/g, function (match) {
 				return '&' + {'&': 'amp', '<': 'lt', '>': 'gt', '"': '#34', '\'': '#39'}[match] + ';';
