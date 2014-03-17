@@ -173,7 +173,8 @@ module.exports = {
 			path	= require('path');
 
 		fs.stat(fpath, function (err, stat) {
-			var stream, lm;
+			var stream, lm,
+				ext = path.extname(fpath);
 
 			if (err || !stat.isFile()) {
 				if (!_loop && _this._cacheBust && _this._cacheBust.test(fpath)) {
@@ -192,7 +193,7 @@ module.exports = {
 
 			mtime.setMilliseconds(0);
 
-			resp.setHeader('Content-Type', mimeTypes[path.extname(fpath)] || mimeTypes.other);
+			resp.setHeader('Content-Type', mimeTypes[ext] || mimeTypes.other);
 			resp.setHeader('Last-Modified', mtime.toUTCString());
 
 			switch (req.accept.bestEncoding) {
