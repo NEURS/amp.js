@@ -196,6 +196,10 @@ module.exports = {
 			resp.setHeader('Content-Type', mimeTypes[ext] || mimeTypes.other);
 			resp.setHeader('Last-Modified', mtime.toUTCString());
 
+			if (~['.svg', '.ttf', '.woff', '.otf', '.eot'].indexOf(ext)) {
+				resp.setHeader('Access-Control-Allow-Origin', '*');
+			}
+
 			switch (req.accept.bestEncoding) {
 				case 'deflate':
 					resp.writeHead(200, {'Content-Encoding': 'deflate', 'Vary': 'Accept-Encoding'});
