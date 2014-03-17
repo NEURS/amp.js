@@ -146,6 +146,10 @@ module.exports = amp.Class.extend({
 	},
 
 	redirect: function (code, url) {
+		if (this._rendered) {
+			return false;
+		}
+
 		if (!code && !url) {
 			return false;
 		}
