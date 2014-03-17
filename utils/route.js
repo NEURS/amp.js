@@ -266,7 +266,7 @@ module.exports = {
 		if (req.method === 'POST') {
 			var body = '';
 
-			if (req.headers['content-type'].match(/multipart/i)) {
+			if (req.headers['content-type'] && req.headers['content-type'].match(/multipart/i)) {
 				var multipart	= require('parted').multipart,
 					parser		= new multipart(req.headers['content-type']);
 
