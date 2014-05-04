@@ -95,7 +95,7 @@ module.exports = {
 		controller: '[A-Za-z0-9][A-Za-z0-9_-]+[A-Za-z0-9]',
 		action: '[A-Za-z0-9][A-Za-z0-9_-]+[A-Za-z0-9]',
 		id: '[0-9]+',
-		params: '(/[/A-Za-z0-9_-]+)*?'
+		params: '(/[/A-Za-z0-9_-.]+)*?'
 	},
 
 	_cacheBust: /(.+)\.(?:\d+)\.(js|css|png|jpg|jpeg|gif)$/,
