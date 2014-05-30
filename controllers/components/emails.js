@@ -9,13 +9,15 @@ module.exports = amp.Component.extend({
 	options: null,
 	_use: null,
 
-	_queue: [],
-	_data: {},
+	_queue: null,
+	_data: null,
 	_sendingQueue: false,
 	_viewEngine: null,
 
 	init: function (controller) {
-		this.controller = controller
+		this.controller	= controller;
+		this._queue		= [];
+		this._data		= {};
 	},
 
 	_init: function (cb) {
