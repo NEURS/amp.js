@@ -16,11 +16,12 @@ module.exports = amp.Component.extend({
 
 	init: function (controller) {
 		this.controller	= controller;
-		this._queue		= [];
-		this._data		= {};
 	},
 
 	_init: function (cb) {
+		this._queue		= [];
+		this._data		= {};
+
 		this.use(options.type, options[options.type]);
 		cb && cb();
 	},
@@ -44,6 +45,7 @@ module.exports = amp.Component.extend({
 	},
 
 	set: function (name, value) {
+		if (!this._data) this._data = {};
 		dottie.set(this._data, name, value);
 	},
 
@@ -128,6 +130,7 @@ module.exports = amp.Component.extend({
 	},
 
 	queue: function (message, callback) {
+		if (!this._queue) this._queue = [];
 		this._queue.push([message, callback, this._data]);
 		this.reset();
 	},
