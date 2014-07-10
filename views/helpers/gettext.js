@@ -4,8 +4,7 @@ var amp		= require('../../utils/base'),
 	gettext = new Gettext();
 	
 String.prototype.format = function () {
-	Array.prototype.unshift.call(arguments, this);
-
+	Array.prototype.unshift.call(arguments, this + '');
 	return amp.string.sprintf.apply(amp.string, arguments);
 };
 
@@ -67,7 +66,7 @@ module.exports = amp.Class.extend({
 		var _domain, file;
 
 		domain	= domain || 'default';
-		_domain	= this.locale + "__" + domain;
+		_domain	= this.locale + '__' + domain;
 
 		if (!gettext._domains[_domain]) {
 			file = amp.constants.locale + '/' + this.locale.toLowerCase().replace(/-/, '_') + '/LC_MESSAGES/' + domain + '.po';
