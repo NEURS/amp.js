@@ -17,7 +17,7 @@
   ],
   "dependencies": {
     "colors": "0.6.2",
-    "sequelize": "1.7.9",
+    "sequelize": "1.7.10",
     "underscore.string": "2.3.3",
     "lingo": "0.0.5",
     "qs": "0.6.6",
