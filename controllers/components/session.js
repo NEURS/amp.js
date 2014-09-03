@@ -3,7 +3,8 @@ var amp		= require('../../utils/base'),
 	dottie	= require('dottie'),
 	cookies	= require('./cookies'),
 	config	= amp.config.session,
-	store	= amp.stores[config.store] || new (require('../../lib/stores/' + config.store))(config);
+	store	= amp.stores[config.store] || new (require('../../lib/stores/' + config.store))(config),
+	noop	= function () {};
 
 if (!amp.stores[config.store]) {
 	amp.stores[config.store] = store;
@@ -78,7 +79,7 @@ module.exports = amp.Component.extend({
 
 		store.get(config.cookie.name + this.id, function (err, result) {
 			if (err) {
-				
+
 			} else {
 				cb(null, dottie.get(result, key));
 			}
@@ -90,13 +91,13 @@ module.exports = amp.Component.extend({
 
 		this.controller.request.session = this.session;
 
-		store.set(config.cookie.name + this.id, this.session, config.ttl || 172800, cb);
+		store.set(config.cookie.name + this.id, this.session, config.ttl || 172800, cb || noop);
 	},
 
 	del: function (key, cb) {
 		dottie.set(this.session, key, undefined);
 
-		store.del(key, cb);
+		store.del(key, cb || noop);
 	},
 
 	flash: function (type, message, cb) {
@@ -105,6 +106,6 @@ module.exports = amp.Component.extend({
 			type	= 'general';
 		}
 
-		this.set('_flash.' + type, message, cb);
+		this.set('_flash.' + type, message, cb || noop);
 	}
 });
